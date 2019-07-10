@@ -1,8 +1,0 @@
-version: "Apple Swift version 5.0.1 (swiftlang-1001.0.82.4 clang-1001.0.46.5)"
-options: "466be5dbf788510730bd4da213f0a401"
-build_time: [1562749729, 204226000]
-inputs:
-  "/Users/chm/Code/CS193P/Concentration/Concentration/ViewController.swift": [1562749683, 278311205]
-  "/Users/chm/Code/CS193P/Concentration/Concentration/Supporting Files/AppDelegate.swift": [1562749176, 554781490]
-  "/Users/chm/Code/CS193P/Concentration/Concentration/Concentration.swift": [1562749716, 339080447]
-  "/Users/chm/Code/CS193P/Concentration/Concentration/Card.swift": [1562661213, 919541199]

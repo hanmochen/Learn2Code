@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>logFormatVersion</key>
+	<integer>10</integer>
+	<key>logs</key>
+	<dict>
+		<key>ED0D00C2-1C2A-4E0E-9623-401C4C4D770C</key>
+		<dict>
+			<key>className</key>
+			<string>IDEActivityLogSection</string>
+			<key>documentTypeString</key>
+			<string>&lt;nil&gt;</string>
+			<key>domainType</key>
+			<string>Xcode.IDEActivityLogDomainType.BuildLog</string>
+			<key>fileName</key>
+			<string>ED0D00C2-1C2A-4E0E-9623-401C4C4D770C.xcactivitylog</string>
+			<key>primaryObservable</key>
+			<dict>
+				<key>highLevelStatus</key>
+				<string>W</string>
+			</dict>
+			<key>schemeIdentifier-containerName</key>
+			<string>Concentration project</string>
+			<key>schemeIdentifier-schemeName</key>
+			<string>Concentration</string>
+			<key>schemeIdentifier-sharedScheme</key>
+			<integer>1</integer>
+			<key>signature</key>
+			<string>Build Concentration</string>
+			<key>timeStartedRecording</key>
+			<real>584443304.25339305</real>
+			<key>timeStoppedRecording</key>
+			<real>584443310.95459998</real>
+			<key>title</key>
+			<string>Build Concentration</string>
+			<key>uniqueIdentifier</key>
+			<string>ED0D00C2-1C2A-4E0E-9623-401C4C4D770C</string>
+		</dict>
+	</dict>
+</dict>
+</plist>

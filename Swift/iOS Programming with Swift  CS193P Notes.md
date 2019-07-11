@@ -698,3 +698,239 @@ var numberOfTouchesRequired: Int // ﬁnger count
 var allowableMovement: CGFloat // how far ﬁnger can move and still recognize Very important to pay attention to .cancelled because of drag and drop
 ```
 
+
+
+## Multiple MVCs
+
+### MVC working together
+
+iOS provides some Controllers whose View is “other MVCs”
+
+#### UITabBarController
+
+- It lets the user choose between different MVCs
+
+- The icon, title and even a “badge value” on these is determined by the MVCs themselves via their property:
+
+  `var tabBarItem: UITabBarItem!`
+
+  But usually you just set them in your storyboard.
+
+- If there are too many tabs to ﬁt here, the `UITabBarController` will automatically present a UI for the user to manage the overﬂow!
+
+#### UISplitViewController
+
+- Puts two MVCs side-by-side
+  - Master
+  - Detail
+
+#### UINavigationController
+
+- Pushes and pops MVCs off of a stack (like a stack of cards)
+
+
+
+### Accessing the sub-MVCs
+
+You can get the sub-MVCs via the viewControllers property
+
+```swift
+var viewControllers: [UIViewController]? { get set } // can be optional (e.g. for tab bar)
+
+// for a tab bar, they are in order, left to right, in the array 
+// for a split view, [0] is the master and [1] is the detail 
+// for a navigation controller, [0] is the root and the rest are in order on the stack
+// even though this is settable, usually setting happens via storyboard, segues, or other 
+// for example, navigation controller’s push and pop methods
+```
+
+But how do you get ahold of the SVC, TBC or NC itself?
+
+```swift
+//Every UIViewController knows the Split View, Tab Bar or Navigation Controller it is currently in These are UIViewController properties …
+
+var tabBarController: UITabBarController? { get } 
+var splitViewController: UISplitViewController? { get } 
+var navigationController: UINavigationController? { get }
+
+//So, for example, to get the detail (right side) of the split view controller you are in …
+
+if let detail: UIViewController? = splitViewController?.viewControllers[1] { … }
+```
+
+Adding (or removing) MVCs from a UINavigationController
+
+```swift
+func pushViewController(_ vc: UIViewController, animated: Bool) func popViewController(animated: Bool) 
+
+```
+
+
+But we usually don’t do this. Instead we use Segues. More on this in a moment.
+
+
+
+### Wiring up MVCs
+
+- Just drag out a `splitViewController` (and delete all the extra VCs it brings with it)
+- But split view can only do its thing properly on iPad/iPhone+
+  - So we need to put some Navigation Controllers in there so it will work on iPhone 
+  - The Navigation Controllers will be good for iPad too because the MVCs will get titles 
+  - The simplest way to wrap a Navigation Controller around an MVC is with `Editor->Embed In`
+
+
+
+### Segues
+
+- We’ve built up our Controllers of Controllers,
+  - Now we need to make it so that one MVC can cause another to appear We call that a “segue”
+- Kinds of segues
+  - Show Segue: will push in a Navigation Controller, else Modal
+  - Show Detail Segue: will show in Detail of a Split View or will push in a Navigation Controller
+  - Modal Segue: take over the entire screen while the MVC is up
+  - Popover Segue: make the MVC appear in a little popover window
+- **Segues always create a new instance of an MVC**
+  - Going “back” in a Navigation Controller is NOT a segue though (so no new instance there)
+- How do we make these segues happen?
+  - Ctrl-drag in a storyboard from an instigator (like a button) to the MVC to segue to 
+  - Can be done in code as well
+
+
+
+#### Create a Segue
+
+- Ctrl-drag from the button  that causes the graph to appear to the MVC of the graph.
+- Select the kind of segue you want. Usually Show or Show Detail.
+- Now click on the segue and open the Attributes Inspector
+- Give the segue a unique identiﬁer here.  It should describe what the segue does.
+
+#### Prepraring for a Segue
+
+```swift
+func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+	if let identifier = segue.identifier { 
+		switch identifier { 
+			case “Show Graph”:
+				if let vc = segue.destination as? GraphController { 					
+						vc.property1 = …
+						vc.callMethodToSetItUp(…)
+        }
+      default: break
+    }
+  }
+}
+```
+
+The segue passed in contains important information about this segue:
+
+
+1. the identiﬁer from the storyboard
+
+
+2. the Controller of the MVC you are segueing to (which was just created for you)
+
+The sender is either the instigating object from a storyboard (e.g. a UIButton)
+ or the sender you provided (see last slide) if you invoked the segue manually in code
+
+
+
+#### Preventing Segues
+
+You can prevent a segue from happening too
+
+Just return false from this method your UIViewController …
+
+```swift
+func shouldPerformSegue(withIdentifier identifier: String?, sender: Any?) -> Bool 
+```
+
+The identifier is the one in the storyboard.
+
+The sender is the instigating object (e.g. the button that is causing the segue).
+
+
+
+## Animation
+
+### Timer
+
+
+
+- Used to execute code periodically
+
+- Fire one off with this method …
+
+  ```swift
+  class func scheduledTimer( 
+  	withTimeInterval: TimeInterval, 
+    repeats: Bool, 
+    block: (Timer) -> Void 
+  ) -> Timer
+  ```
+
+  
+
+#### Start
+
+```swift
+private weak var timer: Timer?
+timer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: true) { timer in
+	// your code here 
+} 
+```
+
+Every 2 seconds (approximately), the closure will be executed.
+
+Note that the var we stored the timer in is weak.
+
+That’s okay because the run loop will keep a strong pointer to this as long as it’s scheduled.
+
+
+
+#### Stop
+
+`timer.invalidate()`
+
+
+
+#### Tolerance
+
+It might help system performance to set a tolerance for “late ﬁring”.
+
+For example, if you have timer that goes off once a minute, a tolerance of 10s might be ﬁne. 
+
+```swift
+myOneMinuteTimer.tolerance = 10 // in seconds 
+```
+
+The ﬁring time is relative to the start of the timer (not the last time it ﬁred), i.e. no “drift”.
+
+
+
+### Kinds of Animation
+
+- Animating UIView properties
+
+  - Changing things like the frame or transparency.
+
+- Animating Controller transitions (as in a UINavigationController)
+
+  - Beyond the scope of this course, but fundamental principles are the same.
+
+- Core Animation
+
+  - Underlying powerful animation framework (also beyond the scope of this course).
+
+- OpenGL and Metal
+
+  - 3D
+
+- SpriteKit
+
+  - “2.5D” animation (overlapping images moving around over each other, etc.)
+
+- Dynamic Animation
+
+  - “Physics”-based animation.
+
+  

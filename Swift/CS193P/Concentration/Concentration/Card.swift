@@ -11,7 +11,9 @@ import Foundation
 struct Card: Hashable
 {
     var hashValue: Int {return identifier}
-     
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(identifier)
+    }
     static func ==(lhs:Card, rhs: Card)-> Bool{
         return lhs.identifier == rhs.identifier
     }
@@ -29,5 +31,6 @@ struct Card: Hashable
         self.identifier = identifier
     }
 }
+
 
 

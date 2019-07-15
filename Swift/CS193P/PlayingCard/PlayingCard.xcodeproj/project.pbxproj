@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		D26CD39122DC27EB00D08894 /* CardBehavior.swift in Sources */ = {isa = PBXBuildFile; fileRef = D26CD39022DC27EB00D08894 /* CardBehavior.swift */; };
 		D2D31CEA22D58AB400D7C5FA /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2D31CE922D58AB400D7C5FA /* AppDelegate.swift */; };
 		D2D31CEC22D58AB400D7C5FA /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2D31CEB22D58AB400D7C5FA /* ViewController.swift */; };
 		D2D31CEF22D58AB400D7C5FA /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D2D31CED22D58AB400D7C5FA /* Main.storyboard */; };
@@ -18,6 +19,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		D26CD39022DC27EB00D08894 /* CardBehavior.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardBehavior.swift; sourceTree = "<group>"; };
 		D2D31CE622D58AB400D7C5FA /* PlayingCard.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PlayingCard.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D2D31CE922D58AB400D7C5FA /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		D2D31CEB22D58AB400D7C5FA /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -64,6 +66,7 @@
 				D2D31CFE22D591FB00D7C5FA /* PlayingCardDeck.swift */,
 				D2D31CF022D58AB600D7C5FA /* Assets.xcassets */,
 				D2D31CEB22D58AB400D7C5FA /* ViewController.swift */,
+				D26CD39022DC27EB00D08894 /* CardBehavior.swift */,
 				D2D31D0022D5978200D7C5FA /* PlayingCardView.swift */,
 				D2D31CED22D58AB400D7C5FA /* Main.storyboard */,
 				D2D31CF522D58AB600D7C5FA /* Info.plist */,
@@ -157,6 +160,7 @@
 				D2D31CFD22D58B3C00D7C5FA /* PlayingCard.swift in Sources */,
 				D2D31D0122D5978200D7C5FA /* PlayingCardView.swift in Sources */,
 				D2D31CEA22D58AB400D7C5FA /* AppDelegate.swift in Sources */,
+				D26CD39122DC27EB00D08894 /* CardBehavior.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

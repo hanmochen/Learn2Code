@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14490.70" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" colorMatched="YES" initialViewController="BYZ-38-t0r">
-    <device id="retina6_1" orientation="portrait">
+    <device id="retina4_7" orientation="portrait">
         <adaptation id="fullscreen"/>
     </device>
     <dependencies>
@@ -14,23 +14,11 @@
             <objects>
                 <viewController id="BYZ-38-t0r" customClass="ViewController" customModule="PlayingCard" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="8bC-Xf-vdC">
-                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <view opaque="NO" contentMode="redraw" id="q7V-p1-QA6" customClass="PlayingCardView" customModule="PlayingCard" customModuleProvider="target">
-                                <rect key="frame" x="40" y="136" width="90" height="144"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <gestureRecognizers/>
-                                <userDefinedRuntimeAttributes>
-                                    <userDefinedRuntimeAttribute type="boolean" keyPath="isFaceUp" value="YES"/>
-                                    <userDefinedRuntimeAttribute type="number" keyPath="rank">
-                                        <integer key="value" value="1"/>
-                                    </userDefinedRuntimeAttribute>
-                                </userDefinedRuntimeAttributes>
-                            </view>
                             <view opaque="NO" contentMode="redraw" id="ngd-tI-FUD" customClass="PlayingCardView" customModule="PlayingCard" customModuleProvider="target">
-                                <rect key="frame" x="162" y="136" width="90" height="144"/>
+                                <rect key="frame" x="186" y="83" width="75" height="120"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <gestureRecognizers/>
@@ -42,7 +30,7 @@
                                 </userDefinedRuntimeAttributes>
                             </view>
                             <view opaque="NO" contentMode="redraw" id="s27-le-icb" customClass="PlayingCardView" customModule="PlayingCard" customModuleProvider="target">
-                                <rect key="frame" x="276" y="136" width="90" height="144"/>
+                                <rect key="frame" x="284" y="83" width="75" height="120"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <gestureRecognizers/>
@@ -54,7 +42,7 @@
                                 </userDefinedRuntimeAttributes>
                             </view>
                             <view opaque="NO" contentMode="redraw" id="TaN-Ip-ki3" customClass="PlayingCardView" customModule="PlayingCard" customModuleProvider="target">
-                                <rect key="frame" x="48" y="314" width="90" height="144"/>
+                                <rect key="frame" x="38" y="197" width="75" height="120"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <gestureRecognizers/>
@@ -66,7 +54,7 @@
                                 </userDefinedRuntimeAttributes>
                             </view>
                             <view opaque="NO" contentMode="redraw" id="2h9-Ow-P7l" customClass="PlayingCardView" customModule="PlayingCard" customModuleProvider="target">
-                                <rect key="frame" x="162" y="314" width="90" height="144"/>
+                                <rect key="frame" x="186" y="212" width="75" height="120"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <gestureRecognizers/>
@@ -78,7 +66,7 @@
                                 </userDefinedRuntimeAttributes>
                             </view>
                             <view opaque="NO" contentMode="redraw" id="cwv-C4-CKf" customClass="PlayingCardView" customModule="PlayingCard" customModuleProvider="target">
-                                <rect key="frame" x="285" y="314" width="90" height="144"/>
+                                <rect key="frame" x="269" y="197" width="75" height="120"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <gestureRecognizers/>
@@ -90,7 +78,7 @@
                                 </userDefinedRuntimeAttributes>
                             </view>
                             <view opaque="NO" contentMode="redraw" id="P26-C0-4J5" customClass="PlayingCardView" customModule="PlayingCard" customModuleProvider="target">
-                                <rect key="frame" x="48" y="481" width="90" height="144"/>
+                                <rect key="frame" x="16" y="370" width="75" height="120"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <gestureRecognizers/>
@@ -102,7 +90,7 @@
                                 </userDefinedRuntimeAttributes>
                             </view>
                             <view opaque="NO" contentMode="redraw" id="8kG-kq-Wo5" customClass="PlayingCardView" customModule="PlayingCard" customModuleProvider="target">
-                                <rect key="frame" x="162" y="481" width="90" height="144"/>
+                                <rect key="frame" x="174" y="355" width="75" height="120"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <gestureRecognizers/>
@@ -114,7 +102,7 @@
                                 </userDefinedRuntimeAttributes>
                             </view>
                             <view opaque="NO" contentMode="redraw" id="1td-Rf-iCp" customClass="PlayingCardView" customModule="PlayingCard" customModuleProvider="target">
-                                <rect key="frame" x="285" y="481" width="90" height="144"/>
+                                <rect key="frame" x="284" y="422" width="75" height="120"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <gestureRecognizers/>
@@ -126,7 +114,7 @@
                                 </userDefinedRuntimeAttributes>
                             </view>
                             <view opaque="NO" contentMode="redraw" id="5xY-N8-qMZ" customClass="PlayingCardView" customModule="PlayingCard" customModuleProvider="target">
-                                <rect key="frame" x="155" y="664" width="90" height="144"/>
+                                <rect key="frame" x="174" y="547" width="75" height="120"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <gestureRecognizers/>
@@ -138,7 +126,7 @@
                                 </userDefinedRuntimeAttributes>
                             </view>
                             <view opaque="NO" contentMode="redraw" id="kfU-az-g68" customClass="PlayingCardView" customModule="PlayingCard" customModuleProvider="target">
-                                <rect key="frame" x="285" y="664" width="90" height="144"/>
+                                <rect key="frame" x="243" y="527" width="75" height="120"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <gestureRecognizers/>
@@ -150,7 +138,19 @@
                                 </userDefinedRuntimeAttributes>
                             </view>
                             <view opaque="NO" contentMode="redraw" id="0ig-HV-bWh" customClass="PlayingCardView" customModule="PlayingCard" customModuleProvider="target">
-                                <rect key="frame" x="48" y="664" width="90" height="144"/>
+                                <rect key="frame" x="72" y="503" width="75" height="120"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <gestureRecognizers/>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="boolean" keyPath="isFaceUp" value="YES"/>
+                                    <userDefinedRuntimeAttribute type="number" keyPath="rank">
+                                        <integer key="value" value="1"/>
+                                    </userDefinedRuntimeAttribute>
+                                </userDefinedRuntimeAttributes>
+                            </view>
+                            <view opaque="NO" contentMode="redraw" id="q7V-p1-QA6" customClass="PlayingCardView" customModule="PlayingCard" customModuleProvider="target">
+                                <rect key="frame" x="85" y="50" width="75" height="120"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <gestureRecognizers/>
@@ -181,7 +181,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="95" y="112.99999999999999"/>
+            <point key="canvasLocation" x="93.599999999999994" y="112.89355322338831"/>
         </scene>
     </scenes>
 </document>

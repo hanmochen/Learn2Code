@@ -1323,9 +1323,303 @@ if let pushBehavior = UIPushBehavior(items: […], mode: .instantaneous) {
   pushBehavior.magnitude = …
   pushBehavior.angle = …
   pushBehavior.action = { [unowned pushBehavior] in 
-                        pushBehavior.dynamicAnimator!.removeBehavior(pushBehavior) 
+                      pushBehavior.dynamicAnimator!.removeBehavior(pushBehavior) 
                         } 
   animator.addBehavior(pushBehavior) // will push right away
 }
 ```
+
+
+
+## View Controller Lifecycle
+
+The start of the lifecycle
+
+- Creation.
+- MVCs are most often instantiated out of a storyboard (as you’ve seen).
+- Then:
+  - Preparation if being segued to.
+  - Outlet setting.
+  - Appearing and disappearing. 
+  - Geometry changes. 
+  - Low-memory situations.
+
+### Primary Setup
+
+```swift
+override func viewDidLoad() {
+
+super.viewDidLoad() // always let super have a chance in lifecycle methods
+
+// do the primary setup of my MVC here 
+// good time to update my View using my Model, for example, because my outlets are set 
+}
+
+```
+
+**Do not do geometry-related setup here! Your bounds are not yet set!**
+
+
+
+### Will Appear
+
+This method will be sent just before your MVC appears (or re-appears) on screen …
+
+```swift
+override func viewWillAppear(_ animated: Bool) {
+  super.viewWillAppear(animated)
+// catch my View up to date with what went on while I was off-screen 
+} 
+```
+
+**Note that this method can be called repeatedly (vs. viewDidLoad which is only called once).**
+
+
+
+### Did Appear
+
+You also ﬁnd out after your MVC has ﬁnished appearing on screen …
+
+```swift
+override func viewDidAppear(_ animated: Bool) {
+	super.viewDidAppear(animated)
+	// maybe start a timer or an animation or start observing something (e.g. GPS position)?
+}
+```
+
+
+
+This is also a good place to **start something expensive** (e.g. network fetch) going.
+
+- Why kick off expensive things here instead of in viewDidLoad?
+- Because we know we’re on screen so it won’t be a waste.
+- By “expensive” we usually mean “time consuming” but could also mean battery or storage.
+
+We must never block our UI from user interaction (thus background fetching, etc.).
+
+- Our UI might need to come up incomplete and later ﬁll in when expensive operation is done. 
+- We use “**spinning wheels**” and such to let the user know we’re fetching something expensive.
+
+
+
+### Did Disappear
+
+
+
+Your MVC went off screen.
+
+Somewhat rare to do something here, but occasionally you might want to “clean up” your MVC. For example, you could save some state or release some large, recreatable resource.
+
+```swift
+override func viewDidDisappear(_ animated: Bool) {
+  super.viewDidDisappear(animated)
+  //clean up MVC
+}
+```
+
+
+
+### Others
+
+#### Geometry
+
+You get notiﬁed when your top-level view’s bounds change (or otherwise needs a re-layout). In other words, when it receives layoutSubviews, you get to ﬁnd out (before and after).
+
+```swift
+override func viewWillLayoutSubviews() 
+
+override func viewDidLayoutSubviews()
+```
+
+**Usually you don’t need to do anything here because of Autolayout.**
+
+**But if you do have geometry-related setup to do, this is the place to do it (not in viewDidLoad!).**
+
+These can be called often (just as `layoutSubviews()` in UIView can be called often). Be prepared for that.
+
+Don’t do anything here that can’t be properly (and efﬁciently) done repeatedly.
+
+It doesn’t always mean your view’s bounds actually changed.
+
+
+
+#### Autorotation
+
+When your device rotates, there’s a lot going on.
+
+Of course your view’s bounds change (and thus you’ll get `viewWill/DidLayoutSubviews`). But the resultant changes are also automatically animated.
+
+You get to ﬁnd out about that and even participate in the animation if you want …
+
+```swift
+override func viewWillTransition( 
+	to size: CGSize, 
+	with coordinator: UIViewControllerTransitionCoordinator 
+) 
+```
+
+You join in using the coordinator’s animate(alongsideTransition:) methods.
+
+We don’t have time to talk about how to do this, unfortunately! Check the documentation !
+
+### 
+
+#### Low Memory 
+
+It is rare, but occasionally your device will run low on memory.
+
+This usually means a buildup of very large videos, images or maybe sounds.
+
+If your app keeps strong pointers to these things in your heap, you might be able to help! When a low-memory situation occurs, iOS will call this method in your Controller …
+
+```swift
+override func didReceiveMemoryWarning() {
+  super.didReceiveMemoryWarning()
+  // stop pointing to any large-memory things (i.e. let them go from my heap) 
+  // that I am not currently using (e.g. displaying on screen or processing somehow) 
+  // and that I can recreate as needed (by refetching from network, for example)
+}
+```
+
+If your application persists in using an unfair amount of memory, you can get killed by iOS.
+
+
+
+#### Waking up from an storyboard
+
+This method is sent to all objects that come out of a storyboard (including your Controller) …
+
+```swift
+override func awakeFromNib() { 
+  super.awakeFromNib()
+  // can initialize stuff here, but it’s VERY early 
+  // it happens way before outlets are set and before you’re prepared as part of a segue
+}
+```
+
+This is pretty much a place of last resort.
+
+Use the other View Controller Lifecycle methods ﬁrst if at all possible.
+
+It’s primarily for situations where code has to be executed VERY EARLY in the lifecycle.
+
+
+
+### Summary
+
+- Instantiated (from storyboard usually) 
+- `awakeFromNib` (only if instantiated from a storyboard) segue preparation happens outlets get set
+- `viewDidLoad`
+- These pairs will be called each time your Controller’s view goes on/off screen …
+  - `viewWillAppear` and `viewDidAppear`
+  -  `viewWillDisappear` and `viewDidDisappear`
+- These “geometry changed” methods might be called at any time after `viewDidLoad` 
+  - `viewWillLayoutSubviews` and `viewDidLayoutSubviews`
+
+- At any time, if memory gets low, you might get …
+  - `didReceiveMemoryWarning`
+
+## Scroll View
+
+
+
+### Create a UIScrollView
+
+- Just like any other UIView. Drag out in a storyboard or use UIScrollView(frame:).
+
+- Or select a UIView in your storyboard and choose “Embed In -> Scroll View” from Editor menu.
+
+### Adding subviews to a UIScrollView
+
+```swift
+scrollView.contentSize = CGSize(width: 3000, height: 2000) 
+logo.frame = CGRect(x: 2700, y: 50, width: 120, height: 180) scrollView.addSubview(logo)
+aerial.frame = CGRect(x: 150, y: 200, width: 2500, height: 1600) scrollView.addSubview(aerial)
+```
+
+
+
+### Positioning subviews in a UIScrollView
+
+```swift
+aerial.frame = CGRect(x: 0, y: 0, width: 2500, height: 1600) 
+logo.frame = CGRect(x: 2300, y: 50, width: 120, height: 180)
+scrollView.contentSize = CGSize(width: 2500, height: 1600)
+```
+
+
+
+### Get Current View
+
+#### Current Position
+
+```swift
+let upperLeftOfVisible: CGPoint = scrollView.contentOffset
+```
+
+#### Current Frame
+
+```swift
+let visibleRect: CGRect = aerial.convert(scrollView.bounds, from: scrollView)
+```
+
+#### Scrolling programmatically
+
+```swift
+ func scrollRectToVisible(CGRect, animated: Bool)
+```
+
+
+
+### Zoom
+
+All UIView’s have a property (transform) which is an afﬁne transform (translate, scale, rotate). Scroll view simply modiﬁes this transform when you zoom.
+
+Zooming is also going to affect the scroll view’s contentSize and contentOffset.
+
+#### Set minimum/maximum zoom scale
+
+```swift
+scrollView.minimumZoomScale = 0.5 // 0.5 means half its normal size
+scrollView.maximumZoomScale = 2.0 // 2.0 means twice its normal size
+```
+
+#### Delegate method
+
+```swift
+func viewForZooming(in scrollView: UIScrollView) -> UIView
+```
+
+If your scroll view only has one subview, you return it here. More than one? Up to you.
+
+The scroll view will keep you up to date with what’s going on.
+
+**Example: delegate method will notify you when zooming ends**
+
+```swift
+
+func scrollViewDidEndZooming(UIScrollView,
+																with view: UIView, 
+																atScale: CGFloat)
+// from delegate method above
+```
+
+If you redraw your view at the new scale, be sure to reset the transform back to identity.
+
+#### Zooming programatically
+
+```swift
+var zoomScale: CGFloat 
+func setZoomScale(CGFloat, animated: Bool) 
+func zoom(to rect: CGRect, animated: Bool)
+```
+
+
+
+### Other things you can control in a scroll view
+
+- Whether scrolling is enabled.
+- Locking scroll direction to user’s ﬁrst “move”.
+- The style of the scroll indicators (call flashScrollIndicators when your scroll view appears).
+- Whether the actual content is “inset” from the content area (contentInset property).
 

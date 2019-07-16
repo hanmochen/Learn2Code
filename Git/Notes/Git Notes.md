@@ -1,3 +1,5 @@
+
+
 # Git Notes
 
 [TOC]
@@ -563,6 +565,491 @@ Git 的分支，其实本质上仅仅是**指向提交对象的可变指针**。
 远程引用是对远程仓库的引用（指针），包括分支、标签等等。 你可以通过 git ls-remote (remote) 来 显式地获得远程引用的完整列表，或者通过 git remote show (remote) 获得远程分支的更多信息。 然而， 一个更常见的做法是利用远程跟踪分支。
 
 假设你的网络里有一个在 git.ourcompany.com 的 Git 服 务器。 如果你从这里克隆，Git 的 clone 命令会为你自动将其命名为 origin，拉取它的所有数据，创建一个指 向它的 master 分支的指针，并且在本地将其命名为 origin/master。
+
+它们以 (remote)/(branch) 形式命名，如果你在本地的 master 分支做了一些工作，然而在同一时间，其他人推送提交到 git.ourcompany.com 并 更新了它的 master 分支，那么你的提交历史将向不同的方向前进。
+
+#### Git Fetch
+
+如果要同步你的工作，运行 `git fetch origin` 命令。 这个命令查找 “origin” 是哪一个服务器（在本例 中，它是 git.ourcompany.com），从中抓取本地没有的数据，并且更新本地数据库，移动 origin/master 指针指向新的、更新后的位置。
+
+![image-20190716102308572](assets/image-20190716102308572.png)
+
+
+
+#### 多个分支
+
+![image-20190716102640834](assets/image-20190716102640834.png)
+
+![image-20190716102655264](assets/image-20190716102655264.png)
+
+
+
+#### git push
+
+当你想要公开分享一个分支时，需要将其推送到有写入权限的远程仓库上。 本地的分支并不会自动与远程仓库 同步 - 你必须显式地推送想要分享的分支。 这样，你就可以把不愿意分享的内容放到私人分支上，而将需要和别人协作的内容推送到公开分支。
+
+如果希望和别人一起在名为 serverfix 的分支上工作，你可以像推送第一个分支那样推送它。 运行 git push (remote) (branch), 你也可以运行 git push origin serverfix:serverfix，它会做同样的事 - 相当于 它说，“推送本地的 serverfix 分支，将其作为远程仓库的 serverfix 分支” 可以通过这种格式来推送本地分支 到一个命名不相同的远程分支。 如果并不想让远程仓库上的分支叫做 serverfix，可以运行 git push origin serverfix:awesomebranch 来将本地的 serverfix 分支推送到远程仓库上的 awesomebranch 分支。
+
+下一次其他协作者从服务器上抓取数据时，他们会在本地生成一个远程分支 origin/serverfix，指向服务器 的 serverfix 分支的引用。
+
+要特别注意的一点是当抓取到新的远程跟踪分支时，本地不会自动生成一份可编辑的副本（拷贝）。这种情况下，不会有一个新的 serverfix 分支 - 只有一个不可以修改的 origin/serverfix 指针。
+
+可以运行 git merge origin/serverfix 将这些工作合并到当前所在的分支。 如果想要在自己的 serverfix 分支上工作，可以将其建立在远程跟踪分支之上：
+
+```bash
+$ git checkout -b serverfix origin/serverfix 
+Branch serverfix set up to track remote branch serverfix from origin. 
+Switched to a new branch 'serverfix'
+```
+
+
+
+#### 跟踪分支
+
+从一个远程跟踪分支检出一个本地分支会自动创建一个叫做 “跟踪分支”（有时候也叫做 “上游分支”）。 跟踪分支是与远程分支有直接关系的本地分支。 如果在一个跟踪分支上输入 git pull，Git 能自动地识别去哪个服务器上抓取、合并到哪个分支。
+
+当克隆一个仓库时，它通常会自动地创建一个跟踪 origin/master 的 master 分支。 然而，如果你愿意的话 可以设置其他的跟踪分支 - 其他远程仓库上的跟踪分支，或者不跟踪 master 分支。 最简单的就是之前看到的例 子，运行 `git checkout -b [branch] [remotename]/[branch]`。 这是一个十分常用的操作所以 Git 提 供了 `--track` 快捷方式：
+
+```bash
+$ git checkout --track origin/serverfix 
+Branch serverfix set up to track remote branch serverfix from origin. 
+Switched to a new branch 'serverfix'
+```
+
+如果想要将本地分支与远程分支设置为不同名字，你可以轻松地增加一个不同名字的本地分支的上一个命令：
+
+```bash
+$ git checkout -b sf origin/serverfix 
+Branch sf set up to track remote branch serverfix from origin. 
+Switched to a new branch 'sf'
+```
+
+现在，本地分支 sf 会自动从 origin/serverfix 拉取。
+
+设置已有的本地分支跟踪一个刚刚拉取下来的远程分支，或者想要修改正在跟踪的上游分支，你可以在任意时间 使用 -u 或 --set-upstream-to 选项运行 git branch 来显式地设置。
+
+```bash
+$ git branch -u origin/serverfix 
+Branch serverfix set up to track remote branch serverfix from origin.
+```
+
+如果想要查看设置的所有跟踪分支，可以使用 git branch 的 -vv 选项。 这会将所有的本地分支列出来并且包 含更多的信息，如每一个分支正在跟踪哪个远程分支与本地分支是否是领先、落后。
+
+需要重点注意的一点是这些数字的值来自于你从每个服务器上最后一次抓取的数据。 这个命令并没有连接服务 器，它只会告诉你关于本地缓存的服务器数据。 如果想要统计最新的领先与落后数字，需要在运行此命令前抓取所有的远程仓库。 可以像这样做：`$ git fetch --all; git branch -vv`
+
+
+
+#### Pull
+
+当 git fetch 命令从服务器上抓取本地没有的数据时，它并不会修改工作目录中的内容。 它只会获取数据然 后让你自己合并。 然而，有一个命令叫作 git pull 在大多数情况下它的含义是一个 git fetch 紧接着一个 git merge 命令。 如果有一个像之前章节中演示的设置好的跟踪分支，不管它是显式地设置还是通过 clone 或 checkout 命令为你创建的，git pull 都会查找当前分支所跟踪的服务器与分支，从服务器上抓取数据然 后尝试合并入那个远程分支。
+
+
+
+#### 删除远程分支
+
+假设你已经通过远程分支做完所有的工作了 - 也就是说你和你的协作者已经完成了一个特性并且将其合并到了 远程仓库的 master 分支（或任何其他稳定代码分支）。 可以运行带有 --delete 选项的 git push 命令来删 除一个远程分支。 如果想要从服务器上删除 serverfix 分支，运行下面的命令：
+
+```bash
+$ git push origin --delete serverfix 
+To https://github.com/schacon/simplegit 
+- [deleted] serverfix
+```
+
+基本上这个命令做的只是从服务器上移除这个指针。 Git 服务器通常会保留数据一段时间直到垃圾回收运行，所 以如果不小心删除掉了，通常是很容易恢复的。
+
+
+
+### Rebase
+
+在 Git 中整合来自不同分支的修改主要有两种方法：`merge` 以及 `rebase`。
+
+![image-20190716105026593](assets/image-20190716105026593.png)
+
+可以提取在 C4 中引入的补丁和修改，然后在 C3 的基础上应用一次。 在 Git 中，这种 操作就叫做 变基。 你可以使用 rebase 命令将提交到某一分支上的所有修改都移至另一分支上。
+
+```bash
+$ git checkout experiment 
+$ git rebase master 
+First, rewinding head to replay your work on top of it... 
+Applying: added staged command
+```
+
+它的原理是首先找到这两个分支（即当前分支 experiment、变基操作的目标基底分支 master）的最近共同祖 先 C2，然后对比当前分支相对于该祖先的历次提交，提取相应的修改并存为临时文件，然后将当前分支指向目 标基底 C3, 最后以此将之前另存为临时文件的修改依序应用。
+
+![image-20190716105223106](assets/image-20190716105223106.png)
+
+现在回到 master 分支，进行一次快进合并。
+
+```bash
+$ git checkout master 
+$ git merge experiment
+```
+
+![image-20190716105306670](assets/image-20190716105306670.png)
+
+此时，C4' 指向的快照就和上面使用 merge 命令的例子中 C5 指向的快照一模一样了。 这两种整合方法的最终 结果没有任何区别，但是变基使得提交历史更加整洁。
+
+
+
+#### 一个例子
+
+![image-20190716105543915](assets/image-20190716105543915.png)
+
+假设你希望将 client 中的修改合并到主分支并发布，但暂时并不想合并 server 中的修改，因为它们还需要经 过更全面的测试。 这时，你就可以使用 git rebase 命令的 --onto 选项，选中在 client 分支里但不在 server 分支里的修改（即 C8 和 C9），将它们在 master 分支上重放：
+
+```bash
+$ git rebase --onto master server client
+```
+
+![image-20190716105632487](assets/image-20190716105632487.png)
+
+现在可以快进合并 master 分支了。
+
+```bash
+$ git checkout master 
+$ git merge client
+```
+
+![image-20190716105800321](assets/image-20190716105800321.png)
+
+接下来你决定将 server 分支中的修改也整合进来。 使用 `git rebase [basebranch] [topicbranch]` 命 令可以直接将特性分支（即本例中的 server）变基到目标分支（即 master）上。这样做能省去你先切换到 server 分支，再对其执行变基命令的多个步骤。
+
+![image-20190716105827514](assets/image-20190716105827514.png)
+
+```bash
+$ git rebase master server
+$ git checkout master 
+$ git merge server
+```
+
+#### 变基的风险
+
+**不要对在你的仓库外有副本的分支执行变基。**
+
+![image-20190716112256304](assets/image-20190716112256304.png)
+
+- 只要你把变基命令当作是在推送前清理提交使之整洁的工具，并且只在从未推送至共用仓库的提交上执行变基命 令，就不会有事。
+
+- `git rebase teamone/master,` Git 将会：
+
+  • 检查哪些提交是我们的分支上独有的（C2，C3，C4，C6，C7）
+
+  • 检查其中哪些提交不是合并操作的结果（C2，C3，C4）
+
+  • 检查哪些提交在对方覆盖更新时并没有被纳入目标分支（只有 C2 和 C3，因为 C4 其实就是 C4'）
+
+  • 把查到的这些提交应用在 teamone/master 上面
+
+- 在本例中另一种简单的方法是使用 `git pull --rebase` 命令而不是直接 git pull。 又或者你可以自己手动 完成这个过程，先 `git fetch`，再 `git rebase teamone/master`。
+
+
+
+#### rebase v.s. merge
+
+在回答这个问题之前，让 我们退后一步，想讨论一下提交历史到底意味着什么。
+
+有一种观点认为，仓库的提交历史即是 **记录实际发生过什么**。 它是针对历史的文档，本身就有价值，不能乱 改。 从这个角度看来，改变提交历史是一种亵渎，你使用_谎言_掩盖了实际发生过的事情。 如果由合并产生的 提交历史是一团糟怎么办？ 既然事实就是如此，那么这些痕迹就应该被保留下来，让后人能够查阅。
+
+另一种观点则正好相反，他们认为提交历史是 **项目过程中发生的事**。 没人会出版一本书的第一版草稿，软件维 护手册也是需要反复修订才能方便使用。 持这一观点的人会使用 rebase 及 filter-branch 等工具来编写故事，怎 么方便后来的读者就怎么写。
+
+
+
+## 服务器上的 Git
+
+
+
+### 协议
+
+#### 本地协议
+
+```bash
+$ git clone /opt/git/project.git
+$ git clone file:///opt/git/project.git
+```
+
+如果在 URL 开头明确的指定 file://，那么 Git 的行为会略有不同。 如果仅是指定路径，Git 会尝试使用硬链 接（hard link）或直接复制所需要的文件。 如果指定 file://，Git 会触发平时用于网路传输资料的进程，那 通常是传输效率较低的方法。 指定 file:// 的主要目的是取得一个没有外部参考（extraneous references） 或对象（object）的干净版本库副本– 通常是在从其他版本控制系统导入后或一些类似情况
+
+要增加一个本地版本库到现有的 Git 项目，可以执行如下的命令：
+
+```bash
+$ git remote add local_proj /opt/git/project.git
+```
+
+然后，就可以像在网络上一样从远端版本库推送和拉取更新了。
+
+
+
+#### 优点
+
+简单
+
+#### 缺点
+
+共享文件系统比较难配置，并且比起基本的网络连接访问，这不方便从多个位置访问。
+
+
+
+### http 协议
+
+#### 智能 http 协议
+
+“智能” HTTP 协议的运行方式和 SSH 及 Git 协议类似，只是运行在标准的 HTTP/S 端口上并且可以使用各种 HTTP 验证机制，这意味着使用起来会比 SSH 协议简单的多，比如可以使用 HTTP 协议的用户名／密码的基础 授权，免去设置 SSH 公钥。
+
+#### 优点
+
+不同的访问方式只需要一个 URL 以及服务器只在需要授权时提示输入授权信息，这两个简便性让终端用户使用 Git 变得非常简单。 相比 SSH 协议，可以使用用户名／密码授权是一个很大的优势，这样用户就不必须在使用 Git 之前先在本地生成 SSH 密钥对再把公钥上传到服务器。 对非资深的使用者，或者系统上缺少 SSH 相关程序 的使用者，HTTP 协议的可用性是主要的优势。 与 SSH 协议类似，HTTP 协议也非常快和高效。
+
+你也可以在 HTTPS 协议上提供只读版本库的服务，如此你在传输数据的时候就可以加密数据；或者，你甚至可 以让客户端使用指定的 SSL 证书。
+
+另一个好处是 HTTP/S 协议被广泛使用，一般的企业防火墙都会允许这些端口的数据通过。
+
+#### 缺点
+
+在一些服务器上，架设 HTTP/S 协议的服务端会比 SSH 协议的棘手一些。 除了这一点，用其他协议提供 Git 服 务与 “智能” HTTP 协议相比就几乎没有优势了。
+
+#### Dumb http 协议
+
+哑 HTTP 协 议里 web 服务器仅把裸版本库当作普通文件来对待，提供文件服务。 哑 HTTP 协议的优美之处在于设置起来简单。
+
+### SSH 协议
+
+架设 Git 服务器时常用 SSH 协议作为传输协议。 因为大多数环境下已经支持通过 SSH 访问 —— 即时没有也比 较很容易架设。 SSH 协议也是一个验证授权的网络协议；并且，因为其普遍性，架设和使用都很容易。
+
+通过 SSH 协议克隆版本库，你可以指定一个 ssh:// 的 URL：
+
+```bash
+$ git clone ssh://user@server/project.git
+```
+
+或者使用一个简短的 scp 式的写法：
+
+```bash
+$ git clone user@server:project.git
+```
+
+你也可以不指定用户，Git 会使用当前登录的用户名。
+
+#### 优势
+
+用 SSH 协议的优势有很多。 首先，SSH 架设相对简单 —— SSH 守护进程很常见，多数管理员都有使用经验，并 且多数操作系统都包含了它及相关的管理工具。 其次，通过 SSH 访问是安全的 —— 所有传输数据都要经过授权 和加密。 最后，与 HTTP/S 协议、Git 协议及本地协议一样，SSH 协议很高效，在传输前也会尽量压缩数据。
+
+#### 缺点
+
+SSH 协议的缺点在于你不能通过他实现匿名访问。 即便只要读取数据，使用者也要有通过 SSH 访问你的主机的 权限，这使得 SSH 协议不利于开源的项目。 如果你只在公司网络使用，SSH 协议可能是你唯一要用到的协议。 如果你要同时提供匿名只读访问和 SSH 协议，那么你除了为自己推送架设 SSH 服务以外，还得架设一个可以让 其他人访问的服务。
+
+
+
+### Git 协议
+
+这是包含在 Git 里的一个特殊的守护进程；它监听在一个特定的端口（9418），类似于 SSH 服务，但是访问无需任何授权。 要让版本库支持 Git 协议，需要先创建一个 git-daemon-export-ok 文 件 —— 它是 Git 协议守护进程为这个版本库提供服务的必要条件 —— 但是除此之外没有任何安全措施。
+
+#### 优点
+
+目前，Git 协议是 Git 使用的网络传输协议里最快的。
+
+#### 缺点
+
+Git 协议缺点是缺乏授权机制。
+
+
+
+## 分布式 Git 
+
+### 分布式工作流
+
+#### 集中式工作流
+
+![image-20190716114215011](assets/image-20190716114215011.png)
+
+#### 集成管理者工作流
+
+1. 项目维护者推送到主仓库。
+2. 贡献者克隆此仓库，做出修改。
+3. 贡献者将数据推送到自己的公开仓库。
+4. 贡献者给维护者发送邮件，请求拉取自己的更新。
+5. 维护者在自己本地的仓库中，将贡献者的仓库加为远程仓库并合并修改。
+6. 维护者将合并后的修改推送到主仓库
+
+这是 GitHub 和 GitLab 等集线器式（hub-based）工具最常用的工作流程。
+
+
+
+#### 司令官与副官工作流
+
+
+
+1. 普通开发者在自己的特性分支上工作，并根据 master 分支进行变基。 这里是司令官的`master`分支。
+
+2. 副官将普通开发者的特性分支合并到自己的 master 分支中。
+
+3. 司令官将所有副官的 master 分支并入自己的 master 分支中。
+
+4. 司令官将集成后的 master 分支推送到参考仓库中，以便所有其他开发者以此为基础进行变基。
+
+![image-20190716114638702](assets/image-20190716114638702.png)
+
+这种工作流程并不常用，只有当项目极为庞杂，或者需要多级别管理时，才会体现出优势。 利用这种方式，项 目总负责人（即司令官）可以把大量分散的集成工作委托给不同的小组负责人分别处理，然后在不同时刻将大块 的代码子集统筹起来，用于之后的整合。
+
+
+
+### Contributing to a project
+
+影响因素
+
+- 活跃贡献者的数量
+- 项目使用的工作流程
+- 提交权限
+
+#### 提交准则
+
+- 在提交前，运行 `git diff --check`
+- 尝试让每一个提交成为一个逻辑上的独立变更集
+  - 如果其中一些改动修改了同一个文件，尝试使用 git add --patch 来部分暂存文件
+- 提交信息
+  - 一般情况 下，信息应当以少于 50 个字符（25个汉字）的单行开始且简要地描述变更，接着是一个空白行，再接着是一个更详细的解释
+
+> ```text
+> Capitalized, short (50 chars or less) summary
+> 
+> More detailed explanatory text, if necessary.  Wrap it to about 72
+> characters or so.  In some contexts, the first line is treated as the
+> subject of an email and the rest of the text as the body.  The blank
+> line separating the summary from the body is critical (unless you omit
+> the body entirely); tools like rebase can get confused if you run the
+> two together.
+> 
+> Write your commit message in the imperative: "Fix bug" and not "Fixed bug"
+> or "Fixes bug."  This convention matches up with commit messages generated
+> by commands like git merge and git revert.
+> 
+> Further paragraphs come after blank lines.
+> 
+> - Bullet points are okay, too
+> 
+> - Typically a hyphen or asterisk is used for the bullet, followed by a
+>   single space, with blank lines in between, but conventions vary here
+> 
+> - Use a hanging indent
+> ```
+
+
+
+#### 私有小型团队
+
+![image-20190716115415491](assets/image-20190716115415491.png)
+
+
+
+#### 私有管理团队
+
+![image-20190716115511057](assets/image-20190716115511057.png)
+
+
+
+####  派生的公开项目
+
+首先，你可能想要克隆主仓库，为计划贡献的补丁或补丁序列创建一个特性分支，然后在那儿做工作。
+
+```bash
+$ git clone <url>
+$ cd project
+$ git checkout -b featureA
+  ... work ...
+$ git commit
+  ... work ...
+$ git commit
+```
+
+当你的分支工作完成后准备将其贡献回维护者，去原始项目中然后点击 “Fork” 按钮，创建一份自己的可写的 项目派生仓库。 然后需要添加这个新仓库 URL 为第二个远程仓库，在本例中称作 myfork：然后需要推送工作到上面。
+
+```bash
+$ git remote add myfork <url>
+$ git push -u myfork featureA
+```
+
+当工作已经被推送到你的派生后，你需要通知维护者。 这通常被称作一个拉取请求（pull request）
+
+
+
+在一个你不是维护者的项目上，通常有一个总是跟踪 origin/master 的 master 分支会很方便，在特性分支 上做工作是因为如果它们被拒绝时你可以轻松地丢弃。 如果同一时间主仓库移动了然后你的提交不再能干净地 应用，那么使工作主题独立于特性分支也会使你变基（rebase）工作时更容易。例如，你想要提供第二个特性 工作到项目，不要继续在刚刚推送的特性分支上工作 - 从主仓库的 master 分支重新开始：
+
+```bash
+$ git checkout -b featureB origin/master
+  ... work ...
+$ git commit
+$ git push myfork featureB
+$ git request-pull origin/master myfork
+  ... email generated request pull to maintainer ...
+$ git fetch origin
+```
+
+
+
+![image-20190716120106033](assets/image-20190716120106033.png)
+
+
+
+假设项目维护者已经拉取了一串其他补丁，然后尝试拉取你的第一个分支，但是没有干净地合并。 在这种情况 下，可以尝试变基那个分支到 origin/master 的顶部，为维护者解决冲突，然后重新提交你的改动：
+
+```bash
+$ git checkout featureA
+$ git rebase origin/master
+$ git push -f myfork featureA
+```
+
+![Commit history after `featureA` work.](assets/public-small-2.png)
+
+因为你将分支变基了，所以必须为推送命令指定 -f 选项，这样才能将服务器上有一个不是它的后代的提交的 featureA 分支替换掉。
+
+
+
+维护者看到了你的第二个分支上的工作并且很喜欢其中的概念，但是想要你修改 一下实现的细节。 你也可以利用这次机会将工作基于项目现在的 master 分支。 你从现在的 origin/master 分支开始一个新分支，在那儿压缩 featureB 的改动，解决任何冲突，改变实现，然后推送它为一个新分支。
+
+```bash
+$ git checkout -b featureBv2 origin/master
+$ git merge --squash featureB
+  ... change implementation ...
+$ git commit
+$ git push myfork featureBv2
+```
+
+
+
+![Commit history after `featureBv2` work.](assets/public-small-3.png)
+
+`--squash` 选项接受被合并的分支上的所有工作，并将其压缩至一个变更集，使仓库变成一个真正的合并发生的 状态，而不会真的生成一个合并提交。 这意味着你的未来的提交将会只有一个父提交，并允许你引入另一个分 支的所有改动，然后在记录一个新提交前做更多的改动。 同样 `--no-commit` 选项在默认合并过程中可以用来 延迟生成合并提交。
+
+
+
+#### 通过邮件的公开项目
+
+使用 `git format-patch` 来生成可以邮寄到列表的 mbox 格式的文件 它将每一个提交转换为一封电子邮件，提交信息的第一行作为主题，剩余信息与提交引入的补丁作为正文。 它 有一个好处是是使用 format-patch 生成的一封电子邮件应用的提交正确地保留了所有的提交信息。
+
+为了将其邮寄到邮件列表，你既可以将文件粘贴进电子邮件客户端，也可以通过命令行程序发送它。 粘贴文本 经常会发生格式化问题，特别是那些不会合适地保留换行符与其他空白的 “更聪明的” 客户端。 幸运的是，Git 提供了一个工具帮助你通过 IMAP 发送正确格式化的补丁，
+
+首先，需要在 ~/.gitconfig 文件中设置 imap 区块。 可以通过一系列的 git config 命令来分别设置每一 个值，或者手动添加它们，不管怎样最后配置文件应该看起来像这样：
+
+```bash
+[imap]
+ folder = "[Gmail]/Drafts" 
+ host = imaps://imap.gmail.com 
+ user = user@gmail.com 
+ pass = p4ssw0rd 
+ port = 993 
+ sslverify = false
+```
+
+如果 IMAP 服务器不使用 SSL，最后两行可能没有必要，host 的值会是 imap:// 而不是 imaps://。 当那些设 置完成后，可以使用 git imap-send 将补丁序列放在特定 IMAP 服务器的 Drafts 文件夹中：
+
+在这个时候，你应该能够到 Drafts 文件夹中，修改收件人字段为想要发送补丁的邮件列表，可能需要抄送给维 护者或负责那个部分的人，然后发送。
+
+
+
+### 维护项目 (TODO)
+
+
+
+## GitHub (TODO)
 
 
 

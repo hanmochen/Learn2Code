@@ -1623,3 +1623,229 @@ func zoom(to rect: CGRect, animated: Bool)
 - The style of the scroll indicators (call flashScrollIndicators when your scroll view appears).
 - Whether the actual content is “inset” from the content area (contentInset property).
 
+
+
+## Multithreading
+
+### Queues
+
+- Multithreading is mostly about “queues” in iOS.
+- Functions (usually closures) are simply lined up in a queue (like at the movies!).
+- Then those functions are pulled off the queue and executed on an associated thread(s).
+- Queues can be “serial” (one closure a time) or “concurrent” (multiple threads servicing it).
+
+
+
+#### Main Queue
+
+- There is a very special serial queue called the “main queue.”
+- All UI activity MUST occur on this queue and this queue only.
+- And, conversely, non-UI activity that is at all time consuming must NOT occur on that queue.
+- We do this because we want our UI to be highly responsive!
+- And also because we want things that happen in the UI to happen predictably (serially). Functions are pulled off and worked on in the main queue only when it is “quiet”.
+
+
+
+#### Global Queues
+
+- For non-main-queue work, you’re usually going to use a shared, global, concurrent queue.
+
+
+
+### Use Queue
+
+#### Getting a Queue
+
+Getting the main queue (where all UI activity must occur).
+
+```swift
+let mainQueue = DispatchQueue.main
+```
+
+Getting a global, shared, concurrent “background” queue.
+
+This is almost always what you will use to get activity off the main queue.
+
+```swift
+let backgroundQueue = DispatchQueue.global(qos: DispatchQoS) // high priority, only do something short and quick DispatchQoS.userInitiated
+DispatchQoS.userInteractive  // high priority, but might take a little bit of time
+DispatchQoS.background // not directly initiated by user, so can run as slow as needed
+DispatchQoS.utility// long-running background processes, low priority
+```
+
+
+
+#### Putting a block of code on the queue
+
+Multithreading is simply the process of putting closures into these queues.
+
+There are two primary ways of putting a closure onto a queue.
+
+You can just plop a closure onto a queue and keep running on the current queue … 
+
+```swift
+queue.async { . . . }
+```
+
+ … or you can block the current queue waiting until the closure ﬁnishes on that other queue … 
+
+```swift
+queue.sync { . . . } 
+```
+
+We almost always do the former.
+
+#### Getting a non-global queue
+
+Very rarely you might need a queue other than main or global.
+
+Your own serial queue (use this only if you have multiple, serially dependent activities) …
+
+```swift
+let serialQueue = DispatchQueue(label: “MySerialQ”)
+```
+
+Your own concurrent queue (rare that you would do this versus global queues) …
+
+```swift
+let concurrentQueue = DispatchQueue(label: “MyConcurrentQ”, attributes: .concurrent)
+```
+
+
+
+**We are only seeing the tip of the iceberg**
+
+There is a lot more to GCD (Grand Central Dispatch) You can do locking, protect critical sections, readers and writers, synchronous dispatch, etc. Check out the documentation if you are interested
+
+**There is also another API to all of this**
+
+`OperationQueue` and `Operation` Usually we use the DispatchQueue API, however.
+
+This is because the “nesting” of dispatching reads very well in the code But the Operation API is also quite useful (especially for more complicated multithreading)
+
+
+
+### Multithreading API
+
+Quite a few places in iOS will do what they do off the main queue 
+
+They might even afford you the opportunity to do something off the main queue 
+
+iOS might ask you for a function (a closure, usually) that executes off the main thread 
+
+**Don’t forget that if you want to do UI stuff there, you must dispatch back to the main queue!**
+
+
+
+#### Example of a multithreaded iOS API
+
+This API lets you fetch the contents of an http URL into a Data off the main queue!
+
+```swift
+let session = URLSession(configuration: .default) 
+if let url = URL(string: "http://stanford.edu/...") { 
+  let task = session.dataTask(with: url) { (data: Data?, response, error) in 
+   //Do Something with the data                                      
+	DispatchQueue.main.async {
+		// do UI stuff here
+  	}
+  	print(“did some stuff with the data, but UI part hasn’t happened yet”)                   
+	} 
+  task.resume()
+}
+print(“done firing off the request for the url’s contents”)
+```
+
+
+
+- 1->2->3->10->12
+- 4->5->8
+- 6
+
+
+
+
+
+## More about Autolayout
+
+What we have learned about auto-layout
+
+- Using the dashed blue lines to try to tell Xcode what you intend
+-  Reset to Suggested Constraints in lower right corner if blue lines were good enough 
+- Ctrl-dragging to the edges and to other views 
+- Size Inspector to look at and edit simple details of the constraints on a view 
+- Clicking on a constraint directly in the storyboard and inspecting it
+-  The “pin” menu in the lower right corner (there’s an “arrange” button there too) 
+- The Document Outline is an awesome place to view/edit and resolve problem constraints
+
+**Mastering Autolayout requires experience**
+
+**Autolayout can be done from code as well**
+
+All that is not always enough
+
+Sometimes the geometry changes so drastically that simple autolayout cannot cope. You actually need to reposition the views entirely to make them ﬁt properly.
+
+**Solution? We can vary our UI based on its “size class”**
+
+
+
+### Size Class
+
+A view controller’s current size class says what sort of room it has to lay out in.
+
+It’s not an exact number or dimension, it’s just either “compact” or “regular” width or height.
+
+
+
+#### iPhone
+
+- All iPhones in portrait are compact in width and regular in height 
+
+- All non-Plus iPhones in landscape are compact in both dimensions
+
+
+
+#### iPhone Plus
+
+- iPhone Plus is also compact in width and regular in height in portrait 
+- But in landscape, the iPhone Plus is only compact in height (i.e. it’s regular in width)
+
+
+
+#### iPad
+
+- Always regular in both dimensions 
+- But depending on the environment an MVC is in, it might be compact (e.g. split view master)
+
+
+
+![image-20190718110254034](assets/image-20190718110254034.png)
+
+![image-20190718110308230](assets/image-20190718110308230.png)
+
+**What can we do based on our size class?**
+
+- You can vary many properties in UIView …
+
+- Fonts, background color, isHidden, even whether a view is installed in the view hierarchy. 
+- Most importantly though, you can also include or exclude any constraint based on size class. 
+- By doing this, we can rearrange our UI completely differently in different size class situations.
+-  InterfaceBuilder has full support for doing this.
+
+**Using Size Class information**
+
+You can ﬁnd out your current “size class” in code using this method in UIViewController …
+
+```swift
+let myHorizSizeClass: UIUserInterfaceSizeClass = traitCollection.horizontalSizeClass
+```
+
+ The return value is an enum … either `.compact` or `.regular` (or .`unspecified`).
+
+However, it is rare to look at our size class in code.
+
+Again, we’re almost always going to do this in InterfaceBuilder.
+
+
+

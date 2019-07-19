@@ -1975,3 +1975,404 @@ The passed closure will be executed some time later on the main thread.
  You can call multiple `loadObjects(ofClass:)` for different classes.
 
 You don’t usually do anything else in `dropInteraction(performDrop:).`
+
+
+
+## Table and Collection Views
+
+These are UIScrollView subclasses used to display unbounded amounts of information. 
+
+- Table View presents the information in a long (possibly sectioned) list.
+
+- Collection View presents the information in a 2D format (usually “ﬂowing” like text ﬂows). They are very similar in their API, so we will learn about them at the same time.
+
+### UITableView
+
+- The list can be very simple or dividen into sections
+- It can show simple ancillary information (Subtitle Style/Left Detail Style/Right Detail Style)
+- Basic Style / Custom Style
+- The rows can also be Grouped …
+
+  - (but usually only when the information in the table is ﬁxed)
+
+
+
+### UICollectionView
+
+Is conﬁgurable to show information in any 2D arrangement. 
+
+But by default it “ﬂows” the items it shows like text ﬂows. 
+
+There is only “custom” layout of information.
+
+Like Table View, can also be divided into sections …
+
+
+
+### Using Table and Collection View
+
+#### Get one
+
+As usual, we drag them into our storyboard
+
+- Table View / Collection View
+
+There are also “prepackaged” MVCs whose entire view is the table or collection view …
+
+- Table View Controller / Collection View Controller
+
+
+
+#### Data 
+
+The most important thing to understand is where they get their data. 
+
+Remember that, per MVC, “views are not allowed to own their data”.
+
+So we can’t just somehow set the data in some var.
+
+Instead, we set a var called `dataSource`.
+
+The type of the dataSource var is a protocol with methods that supply the data.
+
+`dataSource` is exactly like a delegate in how it works.
+
+Table View and Collection View also have a delegate.
+
+Their delegate controls how they look, not what data they display (that’s the dataSource).
+
+
+
+#### Setting the dataSource and delegate
+
+In UITableView …
+
+```swift
+var dataSource: UITableViewDataSource 
+var delegate: UITableViewDelegate 
+```
+
+In UICollectionView …
+
+```swift
+var dataSource: UICollectionViewDataSource 
+var delegate: UICollectionViewDelegate
+```
+
+These are automatically set for you if you use the prepackaged MVCs.
+
+If you drag out a UITableView or UICollectionView, you must set these vars yourself. 
+
+99.99% of the time, these vars will want to be set to the Controller of the MVC.
+
+
+
+#### The UITableView/CollectionViewDataSource protocol
+
+The “data retrieving” protocol has many methods.
+
+But these 3 are the core (UITableView abbreviated to UITV and UICollectionView to UICV)
+
+```swift
+func numberOfSections(in tableView: UITV) -> Int 
+func tableView(_ tv: UITV, numberOfRowsInSection section: Int) -> Int 
+func tableView(_ tv: UITV, cellForRowAt indexPath: IndexPath) -> UITableViewCell UICollectionView
+
+func numberOfSections(in collectionView: UICV) -> Int 
+func collectionView(_ cv: UICV, numberOfItemsInSection section: Int) -> Int 
+func collectionView(_ cv: UICV, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell
+```
+
+
+
+IndexPath speciﬁes which row (in TV) or item (in CV) we’re talking about.
+
+In both, you get the section the row or item is in from indexPath.section.
+
+In TV, you get which row from `indexPath.row`; in CV you get which item from `indexPath.item`. CV might seem like rows and columns, but it’s not, it’s just items “ﬂowing” like text.
+
+
+
+### Loading up Cells
+
+#### Putting data into the UI
+
+
+
+```swift
+func tableView(_ tv: UITV, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+	let cell = tv.dequeueReusableCell(withIdentifier: “MyCellId”, for: indexPath)
+  
+}
+```
+
+
+
+This gets the `UITableViewCell` we are going to load up with our Model data and return.
+
+The `UITableView` will then use that `UITableViewCell` to draw the row at the given indexPath.
+
+
+
+#### Cell Reuse
+
+A UITableView might have 1000s of rows. 
+
+If it had to create a UIView for all of them, it would be very inefﬁcient.
+
+So it reuses the cells.
+
+When a UITableViewCell scrolls off the screen, it gets put in a pool to be reused.
+
+The `dequeueReusableCell(withIdentifier:)` method grabs one out of that reuse pool. 
+
+But what if the reuse pool is empty (like when the table ﬁrst appears)?
+
+
+
+#### Cell Creation
+
+How do new (non-reused) cells get created?
+ They get created by copying a prototype cell you conﬁgure in your storyboard.
+
+Each prototype has an identiﬁer you set in the Inspector.
+
+
+
+#### Implementing cellForRowAt
+
+It is reusing a UITableViewCell with the given identiﬁer if possible.
+
+Otherwise it is making a copy of the prototype in the storyboard.
+
+The fact that cells are reused has serious implications for multithreading!
+
+By the time something returns from another thread, a cell might have been reused.
+
+
+
+```swift
+func tableView(_ tv: UITV, cellForRowAt indexPath: IndexPath) -> UITableViewCell { 
+ let prototype = decision ? “FoodCell” : “CustomFoodCell” 
+  let cell = tv.dequeueReusableCell(withIdentifier: prototype , for: indexPath)
+  cell.textLabel?.text = food(at: indexPath) cell.detailTextLabel?.text = emoji(at: indexPath)
+
+}
+```
+
+
+
+So what API can we use to conﬁgure this cell that we just reused/created?
+
+Well, for UITableView only, the default UITableViewCell has a few basic things …
+
+textLabel, detailTextLabel and imageView
+
+But for UICollectionView and for custom UITableViewCells, WE have to provide the API
+
+
+
+#### Custom UITableViewCell subclass
+
+When we put custom UI into a UITableViewCell prototype, we probably need outlets to it.
+
+```swift
+class MyTVC: UITableViewCell{
+@IBOutlet var name: UILabel 
+@IBOutlet var emoji: UILabel 
+@IBOutlet var category: UILabel
+@IBOutlet var details: UILabel
+}
+```
+
+Can we hook them up directly to our Controller?
+
+No, we can’t, because there might be multiple rows with that type of cell. They can’t all be hooked up to the same single outlet!
+
+Instead, we have to subclass UITableViewCell and put the outlets in there.
+
+
+
+Let’s focus on how we implement that last method.
+
+
+We’ll look at it in the context of UITableView, but it’s the same for UICollectionView.
+
+```swift
+func tableView(_ tv: UITV, cellForRowAt indexPath: IndexPath) -> UITableViewCell { 
+	let prototype = decision ? “FoodCell” : “CustomFoodCell” 
+  let cell = tv.dequeueReusableCell(withIdentifier: prototype, for: indexPath)
+	if let myTVCell = cell as? MyTVC {
+		myTVC.name = food(at: indexPath)
+    myTVC.emoji = emoji(at: indexPath)
+  }
+}
+```
+
+
+
+
+In order to get at those outlets, we need to cast our UITableViewCell to our subclass.
+
+Then we can access its outlets (or any other API it wants to make public).
+
+In Collection View, we always have to do this (there are only “Custom” cells).
+
+In Table View, we do it when the simple Basic, Subtitle, etc. styles aren’t enough.
+
+
+
+### Static Table View
+
+#### Using Table View purely for UI layout
+
+Sometimes we just use a table view to lay out UI elements.
+
+A fantastic example of this is the iOS Settings app.
+
+In this case, you do not need to do any of the `UITableViewDataSource` stuff.
+
+And you can connect outlets directly to your Controller (because there’s only one of each cell). 
+
+To do this, just set your UITableView to have Static Cells instead of Dynamic Prototypes. Usually static table views are Style Grouped.
+
+Then pick the section in the Document Outline you want to add cells to and add them.
+
+
+
+### Table View Segues
+
+#### Detail Disclosure Accessory
+
+We can segue from the row and/or from the Detail Disclosure Accssory.
+
+Just ctrl-drag as usual!
+
+#### Preparing to segue from a row in a table view
+
+
+The sender argument to prepareForSegue is the UITableViewCell of that row …
+
+```swift
+func prepare(for segue: UIStoryboardSegue, sender: Any?) { 
+  if let identifier = segue.identifier { 
+    switch identifier { 
+      case “XyzSegue”: // handle XyzSegue here 
+      case “AbcSegue”:
+      	if let cell = sender as? MyTableViewCell,
+        	let indexPath = tableView.indexPath(for: cell),
+      		let seguedToMVC = segue.destination as? MyVC{
+            seguedToMVC.publicAPI = data[indexPath.section][indexPath.row]
+        }
+      default: break 
+    }
+  }
+}
+```
+
+You can see now why sender is Any
+ Sometimes it’s a UIButton, sometimes it’s a UITableViewCell
+
+
+
+#### Seguing from Collection View Cells
+
+Probably best done from this UICollectionViewDelegate method …
+
+```swift
+func collectionView(collectionView: UICV, didSelectItemAtIndexPath indexPath: IndexPath)
+```
+
+ Use `performSegue(withIdentifier:)` from there.
+
+This strategy could also be used for UITableView.
+
+
+
+### Table and Collection View
+
+#### Model changes
+
+`func reloadData()` Causes it to call numberOfSectionsInTableView and numberOfRows/ItemsInSection all over again and then cellForRow/ItemAt on each visible row or item
+
+Relatively heavyweight, but if your entire data structure changes, that’s what you need If only part of your Model changes, there are lighter-weight reloaders, for example ...
+
+```swift
+func reloadRows(at indexPaths: [IndexPath], with animation: UITableViewRowAnimation)
+```
+
+… among others and of course similar methods for Collection View.
+
+
+
+#### Controlling the height of rows in a Table View
+
+Row height can be ﬁxed (UITableView’s `var rowHeight: CGFloat`) 
+
+Or it can be determined using autolayout (`rowHeight = UITableViewAutomaticDimension`)
+
+If you do automatic, help the table view out by setting `estimatedRowHeight` to something The UITableView’s delegate can also control row heights …
+
+```swift
+func tableView(UITableView, {estimated}heightForRowAt indexPath: IndexPath) -> CGFloat 
+```
+
+Beware: the non-estimated version of this could get called A LOT if you have a big table
+
+
+
+#### Controlling the size of cells in a Collection View
+
+Cell size can be ﬁxed in the storyboard.
+
+You can also drive it from autolayout similar to table view.
+
+ Or you can return the size from this delegate method …
+
+```swift
+func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath ) -> CGSize
+```
+
+
+
+#### Setting a header for each section
+
+If you have a multiple-section table view, you can set a header (or footer) for each. 
+
+There are methods to set this to be a custom UIView.
+
+But usually we just supply a String for the header using this method …
+
+```swift
+func tableView(_ tv: UITV, titleForHeaderInSection section: Int) -> String?
+```
+
+
+
+##### Headers and footers are a bit more difﬁcult in Collection View
+
+You can’t just specify them as Strings.
+
+First you have to “turn them on” in the storyboard.
+
+They are reusable (like cells are), so you have to make a `UICollectionReusableView` subclass. You put your UILabel or whatever for your header, then hook up an outlet.
+
+Then you implement this dataSource method to dequeue and provide a header.
+
+```swift
+func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath ) -> UICollectionReusableView
+```
+
+ Use `dequeueReusableSupplementaryView(ofKind:withReuseIdentifier:for:)` in there. kind will be UICollectionElementKindSectionHeader or Footer.
+
+
+
+There are dozens of other methods in these classes
+
+- Controlling the look (separator style and color, default row height, etc.).
+- Getting cell information (cell for index path, index path for cell, visible cells, etc.).
+- Scrolling to a row (UITableView/UICollectionView are subclasses of UIScrollView).
+- Selection management (allows multiple selection, getting the selected row, etc.). 
+- Moving, inserting and deleting rows, etc.
+
+As always, part of learning the material in this course is studying the documentation

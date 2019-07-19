@@ -30,6 +30,12 @@ class EmojiArtDocumentTableViewController: UITableViewController {
         return cell
     }
     
+    override func viewWillLayoutSubviews() {
+        super.viewWillLayoutSubviews()
+        if splitViewController?.preferredDisplayMode != .primaryOverlay {
+            splitViewController?.preferredDisplayMode = .primaryOverlay
+        }
+    }
     
     @IBAction func newEmojiArt(_ sender: UIBarButtonItem) {
         emojiArtDocuments += ["Untitled".madeUnique(withRespectTo: emojiArtDocuments)]

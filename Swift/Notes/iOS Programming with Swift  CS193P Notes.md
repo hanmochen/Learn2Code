@@ -1849,3 +1849,129 @@ Again, we’re almost always going to do this in InterfaceBuilder.
 
 
 
+## Drag and Drop
+
+- Very interoperable way to move data around
+
+Between apps on iPad and within an app on all iOS 11 devices.
+
+Your app continues to work normally while drag and drop is going on.
+
+Multitouch allows some ﬁngers to be doing drag and drop and other ﬁngers working your app. 
+
+New mulittasking UI in iOS 11 makes drag and drop really useful.
+
+
+
+### Interactions
+
+A view “signs up” to participate in drag and/or drop using an interaction.
+
+It’s kind of like a “gesture recognizer” for drag and drop.
+
+```swift
+let drag/dropInteraction = UIDrag/DropInteraction(delegate: theDelegate) 
+view.addInteraction(drag/dropInteraction)
+```
+
+Now the theDelegate will get involved if a drag or drop occurs in the view.
+
+
+
+#### Starting a drag
+
+Now, when the user makes a dragging gesture, the delegate gets …
+
+```swift
+func dragInteraction(_ interaction: UIDragInteraction, itemsForBeginning session: UIDragSession ) -> [UIDragItem]
+```
+
+… and can return the items it is willing to have dragged from the view.
+
+Returning an empty array means “don’t drag anything after all.”
+
+A `UIDragItem` is created like this …
+
+```swift
+let dragItem = UIDragItem(itemProvider: NSItemProvider(object: provider)) 
+```
+
+Providers: `NSAttributedString`, `NSString`, `UIImage`, `NSURL`, `UIColor,` `MKMapItem`, `CNContact`. You can drag your own types of data, but that’s beyond the scope of this course.
+
+Note that some of these types start with NS … you might have to use `as?` to cast them.
+
+You can also provide an object that will be passed to drop targets inside your own app …
+
+`dragItem.localObject = someObject`
+
+
+
+
+
+#### Adding to a drag
+
+Even in the middle of a drag, users can add more to their drag if you implement …
+
+```swift
+func dragInteraction(_ interaction: UIDragInteraction, itemsForAddingTo session: UIDragSession ) -> [UIDragItem]
+```
+
+… and returns more items to drag.
+
+
+
+#### Accepting a drop
+
+When a drag moves over a view with a UIDropInteraction, the delegate gets …
+
+```swift
+func dropInteraction(_ interaction: UIDropInteraction, canHandle session: UIDragSession ) -> Bool
+```
+
+… at which point the delegate can refuse the drop before it even gets started. 
+
+To ﬁgure that out, the delegate can ask what kind of objects can be provided …
+
+```swift
+let stringAvailable = session.canLoadObjects(ofClass: NSAttributedString.self) let imageAvailable = session.canLoadObjects(ofClass: UIImage.self)
+```
+
+… and refuse the drop if it isn’t to your liking.
+
+
+
+If you don’t refuse it in canHandle:, then as the drag progresses, you’ll start getting …
+
+```swift
+func dropInteraction(_ interaction: UIDropInteraction, sessionDidUpdate session: UIDragSession ) -> UIDropProposal 
+```
+
+… to which you will respond with `UIDropProposal(operation: .copy\.move\ .cancel).` 
+
+- `.cancel` means the drop would be refused
+-  `.copy` means drop would be accepted
+-  `.move` means drop would be accepted and would move the item (only for drags within an app)
+
+If it matters, you can ﬁnd out where the touch is with `session.location(in: view)`.
+
+
+
+If all that goes well and the user let’s go of the drop, you get to go fetch the data …
+
+```swift
+func dropInteraction(_ interaction: UIDropInteraction, performDrop session: UIDropSession )
+```
+
+You will implement this method by calling loadObjects(ofClass:) on the session. This will go and fetch the data asynchronously from whomever the drag source is.
+
+```swift
+session.loadObjects(ofClass: NSAttributedString.self) { theStrings in 
+ // do something with the dropped NSAttributedStrings 
+ }
+```
+
+The passed closure will be executed some time later on the main thread.
+
+ You can call multiple `loadObjects(ofClass:)` for different classes.
+
+You don’t usually do anything else in `dropInteraction(performDrop:).`

@@ -272,7 +272,7 @@ contains(CGPoint) -> Bool  // does the CGRect contain the given CGPoint?
 
   
 
-#### Bounds vs Frame
+#### Bounds vs Frame 
 
 - Views can be rotated (and scaled and translated)
 - Use frame and/or center to position a UIView
@@ -1462,9 +1462,7 @@ You join in using the coordinator’s animate(alongsideTransition:) methods.
 
 We don’t have time to talk about how to do this, unfortunately! Check the documentation !
 
-### 
-
-#### Low Memory 
+#### Low Memory
 
 It is rare, but occasionally your device will run low on memory.
 
@@ -2349,7 +2347,7 @@ func tableView(_ tv: UITV, titleForHeaderInSection section: Int) -> String?
 
 
 
-##### Headers and footers are a bit more difﬁcult in Collection View
+Headers and footers are a bit more difﬁcult in Collection View
 
 You can’t just specify them as Strings.
 
@@ -2376,3 +2374,6 @@ There are dozens of other methods in these classes
 - Moving, inserting and deleting rows, etc.
 
 As always, part of learning the material in this course is studying the documentation
+
+
+

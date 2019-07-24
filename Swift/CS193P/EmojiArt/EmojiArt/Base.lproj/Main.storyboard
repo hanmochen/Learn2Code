@@ -78,19 +78,21 @@
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="H01-vK-mUL">
                                 <rect key="frame" x="0.0" y="88" width="791.5" height="746"/>
                                 <subviews>
-                                    <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="MtM-bH-XEe">
+                                    <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" ambiguous="YES" translatesAutoresizingMaskIntoConstraints="NO" id="MtM-bH-XEe">
                                         <rect key="frame" x="0.0" y="0.0" width="791.5" height="746"/>
+                                        <constraints>
+                                            <constraint firstAttribute="width" constant="791.5" id="3St-6f-G6b"/>
+                                            <constraint firstAttribute="height" constant="746" id="806-gL-2Du"/>
+                                        </constraints>
                                     </scrollView>
                                 </subviews>
                                 <color key="backgroundColor" cocoaTouchSystemColor="groupTableViewBackgroundColor"/>
                                 <constraints>
-                                    <constraint firstItem="MtM-bH-XEe" firstAttribute="leading" secondItem="H01-vK-mUL" secondAttribute="leading" id="6hr-o1-1T3"/>
                                     <constraint firstItem="MtM-bH-XEe" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="H01-vK-mUL" secondAttribute="leading" id="JuY-65-seA"/>
                                     <constraint firstItem="MtM-bH-XEe" firstAttribute="top" relation="greaterThanOrEqual" secondItem="H01-vK-mUL" secondAttribute="top" id="PNS-67-maN"/>
                                     <constraint firstItem="MtM-bH-XEe" firstAttribute="centerY" secondItem="H01-vK-mUL" secondAttribute="centerY" id="Vqh-hE-XSr"/>
                                     <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="MtM-bH-XEe" secondAttribute="bottom" id="aIw-7Z-aq7"/>
                                     <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="MtM-bH-XEe" secondAttribute="trailing" id="dt5-xY-GIg"/>
-                                    <constraint firstItem="MtM-bH-XEe" firstAttribute="top" secondItem="H01-vK-mUL" secondAttribute="top" id="h3J-cJ-y6s"/>
                                     <constraint firstItem="MtM-bH-XEe" firstAttribute="centerX" secondItem="H01-vK-mUL" secondAttribute="centerX" id="r5Z-jV-PBC"/>
                                 </constraints>
                             </view>
@@ -167,6 +169,8 @@
                         <outlet property="dropZone" destination="H01-vK-mUL" id="2RG-p6-2nB"/>
                         <outlet property="emojiCollectionView" destination="QXw-AE-nE7" id="TUW-g1-89f"/>
                         <outlet property="scrollView" destination="MtM-bH-XEe" id="GdG-FY-XTX"/>
+                        <outlet property="scrollViewHeight" destination="806-gL-2Du" id="7qC-1u-NJv"/>
+                        <outlet property="scrollViewWidth" destination="3St-6f-G6b" id="nbs-JI-mZF"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>

@@ -2498,3 +2498,751 @@ UITextFields have a “left” and “right” overlays.
 
 You can control in detail the layout of the text ﬁeld (border, left/right view, clear button).
 
+
+
+## Persistence
+
+
+
+### UserDefaults
+
+#### **A very lightweight and limited database**
+
+UserDefaults is essentially a very tiny database that persists between launchings of your app. Great for things like “settings” and such. Do not use it for anything big!
+
+#### What can you store there?
+
+You are limited in what you can store in UserDefaults: it only stores `Property List` data.
+
+A Property List is any combo of `Array, Dictionary, String, Date, Data` or a number (Int, etc.). This is an old Objective-C API with no type that represents all those, so this API uses Any.
+
+If this were a new, Swift-style API, it would almost certainly not use Any.
+
+(Likely there would be a protocol or some such that those types would implement.)
+
+#### What does the API look like?
+
+It’s “core” functionality is simple. It just stores and retrieves Property Lists by key … 
+
+```swift
+func set(Any?, forKey: String) // the Any has to be a Property List (or crash)
+func object(forKey: String) -> Any? // the Any is guaranteed to be a Property List
+```
+
+
+
+#### Reading and Writing
+
+You don’t usually create one of these databases with UserDefaults(). Instead, you use the static (type) var called standard …
+
+```swift
+let defaults = UserDefaults.standard
+```
+
+Setting a value in the database is easy since the set method takes an Any?. 
+
+```swift
+defaults.set(3.1415, forKey: “pi”) // 3.1415 is a Double which is a Property List type 
+defaults.set([1,2,3,4,5], forKey: “My Array”) // Array and Int are both Property Lists
+defaults.set(nil, forKey: “Some Setting”) // removes any data at that key
+```
+
+You can pass anything as the ﬁrst argument as long as it’s a combo of Property List types.
+
+`UserDefaults` also has convenience API for getting many of the Property List types. 
+
+```swift
+func double(forKey: String) -> Double
+func array(forKey: String) -> [Any]? // returns nil if non-Array at that key
+func dictionary(forKey: String) -> [String:Any]? // note that keys in return are Strings 
+```
+
+The Any in the returned values will, of course, be a Property List type.
+
+
+
+#### Saving the database
+
+Your changes will be occasionally autosaved.
+
+But you can force them to be saved at any time with synchronize …
+
+```swift
+if !defaults.synchronize() { // failed! but not clear what you can do about it }
+```
+
+ (it’s not “free” to synchronize, but it’s not that expensive either)
+
+
+
+### Archiving
+
+There are two mechanisms for making ANY object persistent
+
+#### `NSCoder` mechanism
+
+Requires all objects in an object graph to implement these two methods …
+
+```swift
+func encode(with aCoder: NSCoder) 
+init(coder: NSCoder)
+```
+
+Essentially you store all of your object’s data in the coder’s dictionary.
+
+Then you have to be able to initialize your object from a coder’s dictionary. 
+
+References within the object graph are handled automatically.
+
+You can then take an object graph and turn it into a `Data` (via `NSKeyedArchiver`). And then turn a Data back into an object graph (via `NSKeyedUnarchiver`).
+
+Once you have a Data, you can easily write it to a ﬁle or otherwise pass it around.
+
+
+
+#### `Codable` mechanism
+
+Once your object graph is all Codable, you can convert it to either JSON or a Property List.
+
+```swift
+let object: MyType = …
+let jsonData: Data? = try? JSONEncoder().encode(object) 
+```
+
+Note that this encode throws. You can catch and ﬁnd errors easily (next slide).
+
+By the way, you can make a String object out of this Data like this …
+
+```swift
+let jsonString = String(data: jsonData!, encoding: .utf8) // JSON is always utf8
+```
+
+To get your object graph back from the JSON …
+
+```swift
+if let myObject: MyType = try? JSONDecoder().decode(MyType.self, from: jsonData!) { }
+```
+
+JSON is not “strongly typed.” So things like Date or URL are just strings. Swift handles all this automatically and is even conﬁgurable, for example …
+
+```swift
+let decoder = JSONDecoder() 
+decoder.dateDecodingStrategy = .iso8601 // or .secondsSince1970, etc.
+```
+
+Here’s what it might look like to catch errors during a decoding.
+
+The thing decode throws is an enum of type DecodingError.
+
+Note how we can get the associated values of the enum similar to how we do with switch.
+
+```swift
+do {
+  let object = try JSONDecoder().decode(MyType.self, from: jsonData!)
+  // success, do something with object 
+} catch DecodingError.keyNotFound(let key, let context) { 
+  print(“couldn’t find key \(key) in JSON: \(context.debugDescription)”) 
+} catch DecodingError.valueNotFound(let type, let context) {
+
+} catch DecodingError.typeMismatch(let type, let context) {
+
+} catch DecodingError.
+```
+
+
+
+So how do you make your data types `Codable`? Usually you just say so …
+
+```swift
+struct MyType : Codable { 
+  var someDate: Date 
+  var someString: String 
+  var other: SomeOtherType // SomeOtherType has to be Codable too!
+}
+```
+
+If your vars are all also Codable (standard types all are), then you’re done!
+
+The JSON for this might look like ..
+
+```json
+{
+  “someDate” : “2017-11-05T16:30:00Z”, 
+  “someString” : “Hello”,
+  “other” : <whatever SomeOtherType looks like in JSON>}
+```
+
+Sometimes JSON keys might have different names than your var names (or not be included). For example, someDate might be some_date.
+
+You can conﬁgure this by adding a private enum to your type called CodingKeys like this …
+
+```swift
+struct MyType : Codable {
+  var someDate: Date 
+  var someString: String 
+  var other: SomeOtherType// SomeOtherType has to be Codable too!
+
+  private enum CodingKeys : String, CodingKey {
+    case someDate = “some_date” // note that the someString var will now not be included in the JSON 
+    case other // this key is also called “other” in JSON
+  }
+}
+```
+
+You can participate directly in the decoding by implementing the decoding initializer
+
+```swift
+struct MyType : Codable {
+  var someDate: Date 
+  var someString: String 
+  var other: SomeOtherType // SomeOtherType has to be Codable too!
+  
+  init(from decoder: Decoder) throws {
+    let container = try decoder.container(keyedBy: CodingKeys.self)
+    someDate = try container.decode(Date.self, forKey: .someDate) 
+    //process rest of vars, perhaps validating input, etc. …
+  }
+}
+```
+
+Note that this init throws, so we don’t need do { } inside it (it will just rethrow).
+
+Also note the “keys” are from the CodingKeys enum on the previous slide (e.g. .someDate).
+
+```swift
+class MyType : Codable {
+  var someDate: Date 
+  var someString: String 
+  var other: SomeOtherType // SomeOtherType has to be Codable too!
+  
+  init(from decoder: Decoder) throws {
+    let container = try decoder.container(keyedBy: CodingKeys.self)
+    someDate = try container.decode(Date.self, forKey: .someDate) 
+    // process rest of vars, perhaps validating input, etc.
+    let superDecoder = try container.superDecoder() 
+    try super.init(from: superDecoder) // only if class
+  }
+}
+```
+
+
+
+### File System
+
+**Your application sees iOS ﬁle system like a normal Unix ﬁlesystem**
+
+It starts at /.
+
+There are ﬁle protections, of course, like normal Unix, so you can’t see everything. 
+
+In fact, you can only read and write in your application’s “sandbox”.
+
+**Why sandbox?**
+
+- Security (so no one else can damage your application) 
+- Privacy (so no other applications can view your application’s data) 
+- Cleanup (when you delete an application, everything it has ever written goes with it)
+
+**So what’s in this “sandbox”?**
+
+- Application directory — Your executable, .storyboards, .jpgs, etc.; not writeable. 
+- Documents directory — Permanent storage created by and always visible to the user. 
+- Application Support directory — Permanent storage not seen directly by the user. 
+- Caches directory — Store temporary ﬁles here (this is not backed up by iTunes). Other directories (see documentation) …
+
+#### Getting a path to these special sandbox directories
+
+`FileManager` (along with URL) is what you use to ﬁnd out about what’s in the ﬁle system. You can, for example, ﬁnd the URL to these special system directories like this ...
+
+```swift
+let url: URL = FileManager.default.url(
+  for directory: FileManager.SearchPathDirectory.documentDirectory,// for example
+  in domainMask: .userDomainMask // always .userDomainMask on iOS 
+  appropriateFor: nil, // only meaningful for “replace” ﬁle operations 
+  create: true // whether to create the system directory if it doesn’t already exist
+)
+```
+
+**Examples of SearchPathDirectory values**
+
+`.documentDirectory, .applicationSupportDirectory, .cachesDirectory`, etc.
+
+
+
+#### URL
+
+**Building on top of these system paths**
+
+URL methods:
+
+```swift
+func appendingPathComponent(String) -> URL 
+func appendingPathExtension(String) -> URL
+```
+
+// e.g. “jpg”
+
+**Finding out about what’s at the other end of a URL**
+
+```swift
+var isFileURL: Bool // is this a ﬁle URL (whether ﬁle exists or not) or something else?
+func resourceValues(for keys: [URLResourceKey]) throws -> [URLResourceKey:Any]?
+```
+
+Example keys: `.creationDateKey, .isDirectoryKey, .fileSizeKey`
+
+
+
+#### Data 
+
+Reading binary data from a URL …
+
+```swift
+init(contentsOf: URL, options: Data.ReadingOptions) throws
+```
+
+Writing binary data to a URL …
+
+```swift
+func write(to url: URL, options: Data.WritingOptions) throws -> Bool 
+```
+
+The options can be things like .atomic (write to tmp ﬁle, then swap) or .withoutOverwriting.
+
+Notice that this function throws.
+
+
+
+#### FileManager
+
+Provides utility operations.
+
+e.g., `fileExists(atPath: String) -> Bool`
+
+Can create and enumerate directories; move, copy, delete ﬁles; etc.
+
+Thread safe (as long as a given instance is only ever used in one thread).
+
+Also has a delegate with lots of “should” methods (to do an operation or proceed after an error). And plenty more. Check out the documentation.
+
+### Core Data
+
+#### Database
+
+Sometimes you need to store large amounts of data locally in a database. And you need to search through it in an efﬁcient, sophisticated manner.
+
+#### Enter Core Data
+
+Object-oriented database.
+
+Very, very powerful framework in iOS (unfortunately no time to cover it this quarter). Check out Winter of 2016-17’s iTunesU for a full pair of lectures on it!
+
+#### It’s a way of creating an object graph backed by a database
+
+Usually backed by SQL (but also can do XML or just in memory).
+
+#### How does it work?
+
+Create a visual mapping (using Xcode tool) between database and objects. Create and query for objects using object-oriented API.
+
+Access the “columns in the database table” using vars on those objects.
+
+**So how do you access all of this stuff in your code?**
+
+- Core Data is access via an `NSManagedObjectContext`.
+
+- It is the hub around which all Core Data activity turns.
+
+- The code that the Use Core Data button adds creates one for you in your AppDelegate.
+
+#### Create/update objects in the database
+
+```swift
+let context: NSManagedObjectContext = ... 
+if let tweet = Tweet(context: context) {
+  tweet.text = “140 characters of pure joy” 
+  tweet.created = Date() 
+  let joe = TwitterUser(context: tweet.managedObjectContext) 
+  tweet.tweeter = joe 
+  tweet.tweeter.name = “Joe Schmo”
+}
+```
+
+
+
+Deleting objects
+
+```swift
+context.delete(tweet)
+```
+
+
+
+#### Saving changes
+
+You must explicitly save any changes to a context, but note that this throws.
+
+```swift
+do {
+  try context.save() 
+} 
+catch {
+// deal with error 
+} 
+```
+
+However, we usually use a UIManagedDocument which autosaves for us. More on UIDocument-based code in a few slides …
+
+
+
+#### Querying
+
+Searching for objects in the database
+
+Let’s say we want to query for all TwitterUsers ...
+
+```swift
+let request: NSFetchRequest<TwitterUser> = TwitterUser.fetchRequest()
+//... who have created a tweet in the last 24 hours ...
+let yesterday = Date(timeIntervalSinceNow:-24*60*60) as NSDate request.predicate = NSPredicate(format: “any tweets.created > %@”, yesterday) 
+//... sorted by the TwitterUser’s name ...
+request.sortDescriptors = [NSSortDescriptor(key: “name”, ascending: true)]
+let context: NSManagedObjectContext = ...
+let recentTweeters = try? context.fetch(request) 
+//Returns an empty Array (not nil) if it succeeds and there are no matches in the database.
+//Returns an Array of NSManagedObjects (or subclasses thereof) if there were any matches. And obviously the try fails if the fetch fails.
+```
+
+
+
+### Cloud Kit
+
+- A database in the cloud. Simple to use, but with very basic “database” operations.
+
+- Since it’s on the network, accessing the database could be slow or even impossible.
+
+- This requires some thoughtful programming.
+
+- No time for this one either this quarter, but check Spring of 2015-16’s iTunesU for full demo.
+
+ **Important Components**
+
+- Record Type - like a class or struct 
+- Fields - like vars in a class or struct 
+- Record - an “instance” of a Record Type 
+- Reference - a “pointer” to another Record 
+- Database - a place where Records are stored 
+- Zone - a sub-area of a Database 
+- Container - collection of Databases 
+- Query - an Database search Subscription - a “standing Query” which sends push notiﬁcations when changes occur
+
+**You must enable iCloud in your Project Settings**
+
+
+Under Capabilities tab, turn on iCloud (On/Off switch). Then, choose CloudKit from the Services.
+Then, choose CloudKit from the Services.
+You’ll also see a CloudKit Dashboard button which will take you to the Cloud Kit Dashboard.
+
+#### Cloud Kit Dashboard
+A web-based UI to look at everything you are storing.
+
+Shows you all your Record Types and Fields as well as the data in Records.
+
+You can add new Record Types and Fields and also turn on/off indexes for various Fields.
+
+#### Dynamic Schema Creation
+
+But you don’t have to create your schema in the Dashboard.
+
+You can create it “organically” by simply creating and storing things in the database.
+
+When you store a record with a new, never-before-seen Record Type, it will create that type. Or if you add a Field to a Record, it will automatically create a Field for it in the database. This only works during Development, not once you deploy to your users.
+
+#### Create a record
+
+```swift
+let db = CKContainer.default.publicCloudDatabase 
+let tweet = CKRecord(“Tweet”) 
+tweet[“text”] = “140 characters of pure joy” 
+let tweeter = CKRecord(“TwitterUser”) 
+tweet[“tweeter”] = CKReference(record: tweeter, action: .deleteSelf) 
+db.save(tweet) { (savedRecord: CKRecord?, error: NSError?) -> Void in
+                if error == nil {
+                  // hooray!
+                } else if error?.errorCode == CKErrorCode.NotAuthenticated.rawValue { 
+                  // tell user he or she has to be logged in to iCloud for this to work!
+                } else {
+                  // report other errors (there are 29 different CKErrorCodes!)
+                }
+}
+```
+
+
+
+#### Query for records in a database
+
+
+
+```swift
+let db = CKContainer.default.publicCloudDatabase 
+let predicate = NSPredicate(format: “text contains %@“, searchString) let query = CKQuery(recordType: “Tweet”, predicate: predicate) 
+db.perform(query) { (records: [CKRecord]?, error: NSError?) in
+                   if error == nil { 
+                     // records will be an array of matching CKRecords 
+                   } else if error?.errorCode == CKErrorCode.NotAuthenticated.rawValue {
+                       // tell user he or she has to be logged in to iCloud for this to work! 
+                   } else { 
+                     // report other errors (there are 29 different CKErrorCodes!)
+                   }
+}
+```
+
+
+
+**Standing Queries** (aka Subscriptions)
+
+One of the coolest features of Cloud Kit is its ability to send push notiﬁcations on changes.
+
+ All you do is register an `NSPredicate` and whenever the database changes to match it, boom! 
+
+Unfortunately, we don’t have time to discuss push notiﬁcations this quarter.
+
+If you’re interested, check out the UserNotifications framework.
+
+### UIDocument
+
+#### About UIDocument
+
+**When to use UIDocument**
+
+- If your application stores user information in a way the user perceives as a “document”.
+-  If you just want iOS to manage the primary storage of user information.
+
+**What does UIDocument do?**
+
+- Manages all interaction with storage devices (not just ﬁlesystem, but also iCloud, Box, etc.). 
+- Provides asynchronous opening, writing, reading and closing of ﬁles.
+- Autosaves your document data.
+- Makes integration with iOS 11’s new Files application essentially free.
+
+**What do you need to do to make UIDocument work?**
+
+- Subclass UIDocument to add vars to hold the Model of your MVC that shows your “document”.
+-  Then implement one method that writes the Model to a Data and one that reads it from a Data. That’s it.
+- Now you can use UIDocument’s opening, saving and closing methods as needed.
+- You can also use its “document has changed” method (or implement undo) to get autosaving.
+
+#### Using UIDocument
+
+**Subclassing UIDocument**
+
+For simple documents, there’s nothing to do here except add your Model as a var …
+
+```swift
+class EmojiArtDocument: UIDocument { 
+  var emojiArt: EmojiArt?
+}
+```
+
+There are, of course, methods you can override, but usually you don’t need to.
+
+**Creating a UIDocument**
+
+Figure out where you want your document to be stored in the ﬁlesystem …
+
+```swift
+var url = FileManager.urls(for: .documentDirectory, in: .userDomainMask).first! 
+url = url.appendingPathComponent(“Untitled.foo”)
+//Instantiate your subclass by passing that url to UIDocument’s only initializer …
+let myDocument = EmojiArtDocument(fileURL: url) 
+//… then (eventually) set your Model var(s) on your newly created UIDocument subclass …
+myDocument.emojiArt = …
+```
+
+
+
+**Turning a Data into a Model**
+
+Override this method in your UIDocument subclass to a Data into an instance of your Model. 
+
+```swift
+override func load(fromContents contents: Any, ofType typeName: String?) throws { 
+  emojiArt = contents converted into an EmojiArt
+}
+```
+
+Again, you can throw here if you can’t create a document from the passed contents.
+
+
+
+**Ready to go!**
+
+Now you can open your document (i.e. get your Model) …
+
+```swift
+myDocument.open { success in
+   if success { 
+     // your Model var(s) (e.g. emojiArt) is/are ready to use
+   } else {
+     // there was a problem, check documentState
+   }
+}
+```
+
+This method is asynchronous!
+
+The closure is called on the same thread you call open from (the main thread usually). We’ll see more about documentState in a couple of slides.
+
+
+
+**Saving your document**
+
+You can let your document know that the Model has changed with this method … `myDocument.updateChangeCount(.done) …` or you can use UIDocument’s undoManager (no time to cover that, unfortunately!) UIDocument will save your changes automatically at the next best opportunity.
+
+Or you can force a save using this method …
+
+```swift
+let url = myDocument.fileURL // or something else if you want “save as”
+myDocument.save(to url: URL, for: UIDocumentSaveOperation) { success in 
+    if success {
+      // your Model has successfully been saved } else { // there was a problem, check documentState
+    } else {
+    
+    }
+}
+```
+
+ `UIDocumentSaveOperation` is either `.forCreating` or `.forOverwriting.`
+
+
+
+Closing your document
+
+When you are ﬁnished using a document for now, close it …
+
+```swift
+myDocument.close { success in 
+   if success {
+     // your Model has successfully been saved and closed // use the open method again if you want to use it
+   } else {
+     // there was a problem, check documentState
+   }
+}
+```
+
+
+
+#### Document State
+
+As all this goes on, your document transitions to various states. 
+
+You can ﬁnd out what state it is in using this var …
+
+```swift
+var documentState: UIDocumentState
+```
+
+Possible values
+
+- .normal — document is open and ready for use!
+
+- .closed — document is closed and must be opened to be used 
+- .savingError — document couldn’t be saved (override handleError if you want to know why) 
+- .editingDisabled — the document cannot currently be edited (so don’t let your UI do that) 
+- .progressAvailable — how far a large document is in getting loaded (check progress var) 
+- .inConflict — someone edited this document somewhere else (iCloud) 
+
+To resolve conﬂicts, you access the conﬂicting versions with …
+
+```swift
+NSFileVersion.unresolvedConflictVersionsOfItem(at url: URL) -> [NSFileVersion]?
+```
+
+For the best UI, you could give your user the choice of which version to use.
+
+Or, if your document’s contents are “mergeable”, you could even do that.
+
+documentState can be “observed” using the `UIDocumentStateChanged` notiﬁcation (more later).
+
+
+
+#### Thumbnail
+
+You can specify a thumbnail image for your UIDocument.
+
+It can make it much easier for users to ﬁnd the document they want in Files, for example. Essentially you are going to override the UIDocument method which sets ﬁle attributes. The attributes are returned as a dictionary.
+
+One of the keys is for the thumbnail (it’s a convoluted key) …
+
+```swift
+override func fileAttributesToWrite(to url: URL, for operation: UIDocumentSaveOperation) throws -> [AnyHashable : Any] { 
+  var attributes = try super.fileAttributesToWrite(to: url, for: saveOperation) 
+  if let thumbnail: UIImage = … { 
+    attributes[URLResourceKey.thumbnailDictionaryKey] = [URLThumbnailDictionaryItem.NSThumbnail1024x1024SizeKey:thumbnail] 
+  } 
+  return attributes
+}
+```
+
+It does not have to be 1024x1024 (it seems to have a minimum size, not sure what).
+
+
+
+Other
+
+```swift
+var localizedName: String 
+var hasUnsavedChanges: Bool 
+var fileModificationDate: Date? 
+var userActivity: NSUserActivity?// iCloud documents only
+```
+
+
+
+### UIDocumentBrowserViewController
+
+#### Managing user documents
+
+You probably want users to be able to easily manage their documents in a document-based app. Choosing ﬁles to open, renaming ﬁles, moving them, accessing iCloud drive, etc.
+
+The `UIDocumentBrowserViewController` (UIDBVC) does all of this for you. Using UIDocument to store your document makes leveraging this UIDBVC easy.
+
+#### Using the UIDocumentBrowserViewController
+
+- It has to be the root view controller in your storyboard (i.e. the arrow points to it).
+- Your document-editing MVC will then be presented modally on top of (i.e. takes over the screen).
+
+**What document types can you open?**
+
+- To use the UIDBVC, you have to register which types your application uses. 
+- You do this in the Project Settings in the Info tab with your Target selected.
+-  In the Document Types area, add the types you support.
+- The Types ﬁeld is the UTI of the type you want to support (e.g. public.json, public.image). 
+- The CFBundleTypeRole and LSHandlerRank say how you handle this kind of document. Are you the primary editor and owner of this type or is it just something you can open?
+
+**Declaring your own document type**
+
+- You might have a custom document type that your application edits 
+- You can add this under Exported UTIs in the same place in Project Settings
+
+**Opening documents at the request of other apps (including Files)**
+
+A user can now click on a document of your type in Files (or another app can ask to open one) When this happens, your AppDelegate gets a message sent to it …
+
+```swift
+func application(UIApplication, open: URL, options: [UIApplicationOpenURLOptionsKey:Any]) -> Bool 
+```
+
+We haven’t discussed the AppDelegate yet, but it’s just a swift ﬁle with some methods in it. Inside here, you can ask your UIDocumentBrowserViewController to show this document …
+
+```swift
+let uidbvc = window?.rootViewController as? UIDBVC // since it’s “arrowed” in storyboard 
+uidbvc.revealDocument(at: URL, importIfNeeded: true) { (url, error) in
+   	if error != nil { 
+      // present a UIDocument at url modally (more on how to do this in a moment)
+    } else {
+      // handle the error
+    }
+}
+```
+

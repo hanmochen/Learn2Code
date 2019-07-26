@@ -23,7 +23,6 @@ extension EmojiArt.EmojiInfo
 }
 
 
-
 class EmojiArtViewController: UIViewController, UIDropInteractionDelegate,UIScrollViewDelegate,UICollectionViewDelegate,UICollectionViewDataSource,UICollectionViewDelegateFlowLayout, UICollectionViewDragDelegate, UICollectionViewDropDelegate
 {
     //MARK: - Model
@@ -51,7 +50,6 @@ class EmojiArtViewController: UIViewController, UIDropInteractionDelegate,UIScro
             }
         }
     }
-    
     
     
     

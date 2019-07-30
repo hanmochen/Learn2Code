@@ -2,6 +2,15 @@
 <Workspace
    version = "1.0">
    <FileRef
-      location = "self:EmojiArt.xcodeproj">
+      location = "group:/Users/chm/Code/Learn2Code/Swift/CS193P/EmojiArt/EmojiArt/EmojiArt.swift">
+   </FileRef>
+   <FileRef
+      location = "group:/Users/chm/Code/Learn2Code/Swift/CS193P/EmojiArt/EmojiArt/EmojiArtView.swift">
+   </FileRef>
+   <FileRef
+      location = "group:/Users/chm/Code/Learn2Code/Swift/CS193P/EmojiArt/EmojiArt/EmojiArtViewController.swift">
+   </FileRef>
+   <FileRef
+      location = "self:">
    </FileRef>
 </Workspace>

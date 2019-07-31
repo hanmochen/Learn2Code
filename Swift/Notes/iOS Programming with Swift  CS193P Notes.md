@@ -3627,3 +3627,253 @@ Swift can infer the Type (since that Type has to make sense for `observed`).
 
 
 
+![image-20190731173431471](assets/image-20190731173431471.png)
+
+
+
+![image-20190731173456192](assets/image-20190731173456192.png)
+
+![image-20190731173517889](assets/image-20190731173517889.png)
+
+![image-20190731173534314](assets/image-20190731173534314.png)
+
+
+
+![image-20190731173608950](assets/image-20190731173608950.png)
+
+
+
+![image-20190731173630911](assets/image-20190731173630911.png)
+
+
+
+![image-20190731173703874](assets/image-20190731173703874.png)
+
+
+
+### From Not Running to Inactive
+
+![image-20190731174033148](assets/image-20190731174033148.png)
+
+Your AppDelegate will receive …
+
+```swift
+func application(UIApplication,
+                 will/didFinishLaunchingWithOptions:
+                 [UIApplicationLaunchOptionsKey:Any]? = nil)
+```
+
+… and you can observe …
+
+`UIApplicationDidFinishLaunching`
+
+The passed dictionary (also in `notification.userInfo`) tells you why your application was launched.
+
+**Some examples …** 
+
+- Someone wants you to open a URL
+- You entered a certain place in the world
+
+- You are continuing an activity started on another device
+-  A notiﬁcation arrived for you (push or local)
+
+- Bluetooth attached device wants to interact with you
+
+
+
+
+
+### From  Active to Inactive
+
+![image-20190731174043161](assets/image-20190731174043161.png)
+
+
+
+Your AppDelegate will receive …
+
+```swift
+func applicationWillResignActive(UIApplication)
+```
+
+… and you can observe …
+
+`UIApplicationWillResignActive`
+
+You will want to “pause” your UI here.
+
+For example, Asteroids would want to pause the asteroids. 
+
+- This might happen because a phone call comes in.
+
+- Or you might be on your way to the background.
+
+
+
+### From Inactive to Active
+
+
+
+![image-20190731174214924](assets/image-20190731174214924.png)
+
+
+
+Your AppDelegate will receive …
+
+```swift
+func applicationDidBecomeActive(UIApplication)
+```
+
+… and you can observe …
+
+`UIApplicationDidBecomeActive`
+
+If you have “paused” your UI previously here’s where you would reactivate things.
+
+
+
+### From Inactive to Background
+
+![image-20190731174404094](assets/image-20190731174404094.png)
+
+
+
+Your AppDelegate will receive …
+
+```sw
+func applicationDidEnterBackground(UIApplication)
+```
+
+… and you can observe …
+
+`UIApplicationDidEnterBackground`
+
+Here you want to (quickly) batten down the hatches. You only get to run for 30s or so.
+
+You can request more time, but don’t abuse this (or the system will start killing you instead). 
+
+Prepare yourself to be eventually killed here(probably won’t happen, but be ready anyway
+
+
+
+### From Background to Inactive
+
+
+
+![image-20190731174521970](assets/image-20190731174521970.png)
+
+Your AppDelegate will receive …
+
+```swift
+func applicationWillEnterForeground(UIApplication)
+```
+
+… and you can observe …
+
+`UIApplicationWillEnterForeground`
+
+Whew! You were not killed from background state! Time to un-batten the hatches.
+
+Maybe undo what you did in `DidEnterBackground`. You will likely soon be made Active.
+
+
+
+### Other UIApplicationDelegate
+
+Other AppDelegate items of interest …
+
+- State Restoration (saving the state of your UI so that you can restore it even if you are killed). 
+- Data Protection (ﬁles can be set to be protected when a user’s device’s screen is locked).
+- Open URL (in Xcode’s Info tab of Project Settings, you can register for certain URLs). 
+- Background Fetching (you can fetch and receive results while in the background).
+
+
+
+### UIApplication
+
+
+
+#### Shared instance
+
+There is a single UIApplication instance in your application
+
+```swift
+let myApp = UIApplication.shared
+```
+
+It manages all global behavior 
+
+You never need to subclass it 
+
+It delegates everything you need to be involved in to its UIApplicationDelegate 
+
+However, it does have some useful functionality …
+
+**Opening a URL in another application**
+
+```swift
+func open(URL)
+func canOpenURL(URL) -> Bool
+```
+
+ **Registering to receive Push Notiﬁcations**
+
+```swift
+func (un)registerForRemoteNotifications()
+```
+
+Notiﬁcations, both local and push, are handled by the UNNotification framework.
+
+
+
+**Setting the fetch interval for background fetching**
+
+You must set this if you want background fetching to work …
+
+`func setMinimumBackgroundFetchInterval(TimeInterval)` 
+
+Usually you will set this to UIApplicationBackgroundFetchIntervalMinimum
+
+**Asking for more time when backgrounded**
+
+`func beginBackgroundTask(withExpirationHandler: (() -> Void)?) -> UIBackgroundTaskIdentifier`
+
+ Do NOT forget to call `endBackgroundTask(UIBackgroundTaskIdentifier)` when you’re done!
+
+**Turning on the “network in use” spinner (status bar upper left)**
+
+`var isNetworkActivityIndicatorVisible: Bool // unfortunately just a Bool, be careful`
+
+**Finding out about things**
+
+```swift
+var backgroundTimeRemaining: TimeInterval { get } // until you are suspended 
+var preferredContentSizeCategory: UIContentSizeCategory { get } // big fonts or small fonts
+var applicationState: UIApplicationState { get } // foreground, background, active
+```
+
+
+
+### Info.plist
+
+**Many of your application’s settings are in Info.plist**
+
+- You can edit this ﬁle (in Xcode’s property list editor) by clicking on Info.plist
+- Or you can even edit it as raw XML!
+
+
+
+#### Capabilities
+
+Some features require enabling
+
+- These are server and interoperability features Like iCloud, Game Center, etc.
+
+Switch on in Capabilities tab
+
+- Inside your Project Settings
+
+Not enough time to cover these!
+
+- But check them out!
+- Many require full Developer Program membership 
+- Familiarize yourself with their existence

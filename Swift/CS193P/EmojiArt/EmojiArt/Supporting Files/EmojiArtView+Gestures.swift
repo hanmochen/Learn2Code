@@ -99,7 +99,7 @@ extension EmojiArtView
             if let view = recognizer.view, let index = subviews.firstIndex(of: view) {
                 selectedSubview = view
                 exchangeSubview(at: 0, withSubviewAt: index)
-                //delegate?.emojiArtViewDidChange(self)
+                delegate?.emojiArtViewDidChange(self)
             }
         }
     }

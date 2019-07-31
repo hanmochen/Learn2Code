@@ -25,6 +25,7 @@ extension EmojiArt.EmojiInfo
 
 class EmojiArtViewController: UIViewController, UIDropInteractionDelegate,UIScrollViewDelegate,UICollectionViewDelegate,UICollectionViewDataSource,UICollectionViewDelegateFlowLayout, UICollectionViewDragDelegate, UICollectionViewDropDelegate
 {
+    
     //MARK: - Model
     var emojiArt: EmojiArt? {
         get {
@@ -43,7 +44,7 @@ class EmojiArtViewController: UIViewController, UIDropInteractionDelegate,UIScro
                         self.emojiArtBackgroundImage = (url, image)
                         newValue?.emojis.forEach {
                             let attributedText = $0.text.attributedString(withTextStyle: .body, ofSize: CGFloat($0.size))
-                            self.emojiArtView?.addLabel(with: attributedText , centeredAt: CGPoint(x: $0.x, y: $0.y))
+                            self.emojiArtView.addLabel(with: attributedText , centeredAt: CGPoint(x: $0.x, y: $0.y))
                         }
                     }
                 }
@@ -52,6 +53,7 @@ class EmojiArtViewController: UIViewController, UIDropInteractionDelegate,UIScro
     }
     
     // MARK: - Document Handling
+    
     var document: EmojiArtDocument?
     
     @IBAction func save(_ sender: UIBarButtonItem? = nil) {
@@ -63,13 +65,18 @@ class EmojiArtViewController: UIViewController, UIDropInteractionDelegate,UIScro
     
     @IBAction func close(_ sender: UIBarButtonItem) {
         save()
-        
+        if let observer = emojiArtViewObserver {
+            NotificationCenter.default.removeObserver(observer)
+        }
         if document?.emojiArt != nil {
             document?.thumbnail = emojiArtView.snapshot
         }
-        
         dismiss(animated: true) {
-            self.document?.close()
+            self.document?.close(completionHandler: { (success) in
+                if let observer = self.documentObserver {
+                    NotificationCenter.default.removeObserver(observer)
+                }
+            })
         }
     }
     
@@ -80,30 +87,35 @@ class EmojiArtViewController: UIViewController, UIDropInteractionDelegate,UIScro
         }
     }
     
+    private var documentObserver: NSObjectProtocol?
+    private var emojiArtViewObserver: NSObjectProtocol?
+    
+    
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        documentObserver = NotificationCenter.default.addObserver(
+            forName: UIDocument.stateChangedNotification,
+            object: document,
+            queue: OperationQueue.main,
+            using: { (notification) in
+                print("documentState changed to \(self.document!.documentState)")
+        })
         document?.open { success in
             if success {
                 self.title = self.document?.localizedName
                 self.emojiArt = self.document?.emojiArt
+                self.emojiArtViewObserver = NotificationCenter.default.addObserver(
+                    forName: .EmojiArtViewDidChange,
+                    object: self.emojiArtView,
+                    queue: OperationQueue.main,
+                    using: { (notification) in
+                        self.documentChanged()
+                })
             }
         }
     }
-    
-    /*    override func viewDidLoad() {
-     super.viewDidLoad()
-     if let url = try? FileManager.default.url(
-     for: .documentDirectory,
-     in: .userDomainMask,
-     appropriateFor: nil,
-     create: true
-     ).appendingPathComponent("Untitled.json"){
-     document = EmojiArtDocument(fileURL: url)
-     }
-     }
-     */
 
-    
+
     
 
     // MARK: - Storyboard
@@ -113,8 +125,6 @@ class EmojiArtViewController: UIViewController, UIDropInteractionDelegate,UIScro
             dropZone.addInteraction(UIDropInteraction(delegate: self))
         }
     }
-    
-    var emojiArtView: EmojiArtView! = EmojiArtView()
     
     @IBOutlet weak var scrollViewWidth: NSLayoutConstraint!
     @IBOutlet weak var scrollViewHeight: NSLayoutConstraint!
@@ -136,6 +146,9 @@ class EmojiArtViewController: UIViewController, UIDropInteractionDelegate,UIScro
     func viewForZooming(in scrollView: UIScrollView) -> UIView? {
         return emojiArtView
     }
+    
+    // MARK: - Emoji Art View
+    lazy var emojiArtView = EmojiArtView()
     
     private var _emojiArtBackgroundImageURL: URL?
     

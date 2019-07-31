@@ -3495,3 +3495,135 @@ alert.addTextField( configurationHandler: { textField in
 present(alert, animated: true, completion: nil)
 ```
 
+
+
+## Notification
+
+
+
+### Notification Center
+
+![image-20190731160112237](assets/image-20190731160112237.png)
+
+Get the default “notiﬁcation center” via `NotificationCenter.default` Then send it the following message if you want to “listen to a radio station” …
+
+```swift
+var observer: NSObjectProtocol? // a cookie to later “stop listening” with 
+observer = NotificationCenter.default.addObserver(
+  forName: Notification.Name, // the name of the radio station
+  object: Any?, // the broadcaster (or nil for “anyone”) 
+  queue: OperationQueue? // the queue on which to dispatch the closure below 
+) { (notification: Notification) -> Void in // closure executed when broadcasts occur
+   let info: Any? = notification.userInfo 
+   // info is usually a dictionary of notiﬁcation-speciﬁc information
+  }
+```
+
+
+
+#### Notification.Name
+
+Look this up in the documentation to see what iOS system radio stations you can listen to. There are a lot.
+
+You will see them as static vars on `Notification.Name`.
+
+You can make your own radio station name with Notification.Name(String).
+
+More on broadcasting on your own station in a couple of slides …
+
+
+
+
+
+### Example
+
+
+
+Watching for changes in the size of preferred fonts (user can change this in Settings) ...
+
+```swift
+let center = NotificationCenter.default 
+var observer = center.addObserver(
+  forName: Notification.Name.UIContentSizeCategoryDidChange
+  object: UIApplication.shared, // or nil
+  queue: OperationQueue.main // or nil 
+) { notification in
+   // re-set the fonts of objects using preferred fonts 
+   // or look at the size category and do something with it …
+   let c = notification.userInfo?[UIContentSizeCategoryNewValueKey]
+   // c might be UIContentSizeCategorySmall, for example
+  } 
+center.removeObserver(observer) // when you’re done listening
+```
+
+
+
+#### Posting a Notification
+
+```swift
+NotificationCenter.default.post( 
+  name: Notification.Name, // name of the “radio station” 
+  object: Any?, // who is sending this notiﬁcation (usually self)
+  userInfo: [AnyHashable:Any]? = nil  // any info you want to pass to station listeners
+)
+```
+
+Any closures added with `addObserver` will be executed.
+
+Either immediately on the same queue as post (if queue was nil).
+
+Or asynchronously by posting the block onto the queue speciﬁed with addObserver.
+
+
+
+
+
+### KVO
+
+
+
+**Watching the properties of `NSObject` subclasses**
+
+- The basic idea of KVO is to register a closure to invoke when a property value changes 
+- There is some “mechanism” required to make this work 
+- We’re not going to talk about that, but NSObject implements this mechanism 
+- Thus objects that inherit from NSObject can participate
+
+
+
+**What’s it good for?**
+
+- Usually used by a Controller to observe either its Model or its View 
+- Not every property works with KVO 
+- A property has to be Key Value Coding-compliant to work 
+- There are a few properties scattered throughout the iOS frameworks that are compliant 
+  - For example, UIView’s frame and center work with KVO 
+  - So does most of CALayer underneath UIView 
+- Of course, you can make properties in your own NSObject subclasses compliant
+  -  (though we don’t have time to talk about how to do any of that right now
+-  You’re unlikely to use KVO much, but it’s something that’s good to know it exists
+
+
+
+**How does it work?**
+
+```swift
+var observation = observed.observe(keyPath: KeyPath) { (observed, change) in 
+    // code to execute when the property described by keyPath changes
+}
+```
+
+As long as the observation remains in the heap, the closure will stay active. 
+
+The change argument to the closure is an `NSKeyValueObservedChange`. NSKeyValueObservedChange has the old value and the new value in it.
+
+The syntax for a KeyPath is `\Type.property` or even `\Type.prop1.prop2.prop3`.
+
+Swift can infer the Type (since that Type has to make sense for `observed`).
+
+
+
+## Application Lifecycle
+
+
+

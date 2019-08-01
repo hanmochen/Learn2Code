@@ -3877,3 +3877,119 @@ Not enough time to cover these!
 - But check them out!
 - Many require full Developer Program membership 
 - Familiarize yourself with their existence
+
+
+
+## Segue
+
+
+
+### Model View Controllers
+
+- A way of segueing that takes over the screen
+  - This is not a push.
+  - Notice, no back button (only Cancel).
+- Considerations
+  - The view controller we segue to using a Modal segue will take over the entire screen 
+  - This can be rather disconcerting to the user, so use this carefully
+
+
+
+#### Set up a Modal segue
+
+Just ctrl-drag from a button to another View Controller & pick segue type “Modal” If you need to present a Modal VC not from a button, use a manual segue …
+
+```swift
+func performSegue(withIdentifier: String, sender: Any?)
+```
+
+… or, if you have the view controller itself (e.g. Alerts or from instantiateViewController) …
+
+```swift
+func present(UIViewController, animated: Bool, completion: (() -> Void)?= nil)
+```
+
+
+
+#### Preparing for a Model segue
+
+You prepare for a Modal segue just like any other segue ...
+
+```swift
+func prepare(for: UIStoryboardSegue, sender: Any?) { 
+  if segue.identifier == “GoToMyModalVC” { 
+    let vc = segue.destination as MyModalVC
+    // set up the vc to run here
+  }
+}
+```
+
+**Hearing back from a Modally segued-to View Controller**
+
+- When the Modal View Controller is “done”, how does it communicate results back to presenter?
+- If there’s nothing to be said, just dismiss the segued-to MVC (next slide).
+- To communicate results, generally you would Unwind (more on that in a moment).
+
+
+
+#### Dismiss a view controller
+
+The presenting view controller is responsible for dismissing (not the presented). You do this by sending the presenting view controller this message …
+
+```swift
+func dismiss(animated: Bool, completion: (() -> Void)? = nil)
+```
+
+… which will dismiss whatever MVC it has presented (if any).
+
+You can get at your presenting view controller with this UIViewController property …
+
+```swift
+var presentingViewController: UIViewController?
+```
+
+If you send this to a presented view controller, for convenience, it will forward to its presenter (unless it itself has presented an MVC, in which case it will dismiss that MVC).
+
+But to reduce confusion in your code, only send dismiss to the presenting controller.
+
+Unwind Segues (coming up soon) automatically dismiss (you needn’t call the above method).
+
+
+
+**Controlling the appearance of the presented view controller**
+
+In horizontally regular environments, this var determines what a presented VC looks like …
+
+```swift
+var modalPresentationStyle: UIModalPresentationStyle 
+```
+
+In addition to the default, `.fullScreen`, there’s `.overFullScreen` (presenter visible behind)
+
+On iPad, if full screen is “too much real estate”, there’s `.formSheet` and `.pageSheet` (these two use a smaller space and with a “grayed out” presenting view controller behind) In horizontally compact environments, these will all adapt to always be full screen!
+
+**How is the modal view controller animated onto the screen?**
+
+Depends on this property in the view controller that is being presented …
+
+```swift
+var modalTransitionStyle: UIModalTransitionStyle 
+.coverVertical // slides the presented modal VC up from bottom of screen (the default)
+.flipHorizontal // ﬂips the presenting view controller over to show the presented modal VC 
+.crossDissolve // presenting VC fades out as the presented VC fades in 
+.partialCurl // only if presenting VC is full screen (& no more modal presentations coming) 
+```
+
+The presentation & transition styles can be set in the storyboard by inspecting the segue.
+
+
+
+### Popover
+
+
+
+### Unwind Segue
+
+
+
+### Embed Segue

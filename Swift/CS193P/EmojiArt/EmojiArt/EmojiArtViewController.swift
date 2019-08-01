@@ -8,23 +8,18 @@
 
 import UIKit
 
-extension EmojiArt.EmojiInfo
-{
-    init?(label: UILabel) {
-        if let attributedText = label.attributedText, let font = attributedText.font {
-            x = Int (label.center.x)
-            y = Int (label.center.y)
-            text = attributedText.string
-            size = Int (font.pointSize)
-        } else {
-            return nil
-        }
-    }
-}
-
-
 class EmojiArtViewController: UIViewController, UIDropInteractionDelegate,UIScrollViewDelegate,UICollectionViewDelegate,UICollectionViewDataSource,UICollectionViewDelegateFlowLayout, UICollectionViewDragDelegate, UICollectionViewDropDelegate
 {
+    
+    // MARK: - Navigation
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == "Show Document Info" {
+            if let destination = segue.destination.contents as? DocumentInfoViewController {
+                document?.thumbnail = emojiArtView.snapshot
+                destination.document = document
+            }
+        }
+    }
     
     //MARK: - Model
     var emojiArt: EmojiArt? {
@@ -56,22 +51,23 @@ class EmojiArtViewController: UIViewController, UIDropInteractionDelegate,UIScro
     
     var document: EmojiArtDocument?
     
-    @IBAction func save(_ sender: UIBarButtonItem? = nil) {
+    //  @IBAction func save(_ sender: UIBarButtonItem? = nil) {
+    func documentChanged() {
         document?.emojiArt = emojiArt
-        if  document?.emojiArt != nil {
+        if document?.emojiArt != nil {
             document?.updateChangeCount(.done)
         }
     }
     
     @IBAction func close(_ sender: UIBarButtonItem) {
-        save()
+        documentChanged()
         if let observer = emojiArtViewObserver {
             NotificationCenter.default.removeObserver(observer)
         }
         if document?.emojiArt != nil {
             document?.thumbnail = emojiArtView.snapshot
         }
-        dismiss(animated: true) {
+        presentingViewController?.dismiss(animated: true) {
             self.document?.close(completionHandler: { (success) in
                 if let observer = self.documentObserver {
                     NotificationCenter.default.removeObserver(observer)
@@ -80,12 +76,6 @@ class EmojiArtViewController: UIViewController, UIDropInteractionDelegate,UIScro
         }
     }
     
-    func documentChanged() {
-        document?.emojiArt = emojiArt
-        if document?.emojiArt != nil {
-            document?.updateChangeCount(.done)
-        }
-    }
     
     private var documentObserver: NSObjectProtocol?
     private var emojiArtViewObserver: NSObjectProtocol?
@@ -383,6 +373,19 @@ class EmojiArtViewController: UIViewController, UIDropInteractionDelegate,UIScro
             }
         }
     }
-    
 
+}
+
+extension EmojiArt.EmojiInfo
+{
+    init?(label: UILabel) {
+        if let attributedText = label.attributedText, let font = attributedText.font {
+            x = Int (label.center.x)
+            y = Int (label.center.y)
+            text = attributedText.string
+            size = Int (font.pointSize)
+        } else {
+            return nil
+        }
+    }
 }

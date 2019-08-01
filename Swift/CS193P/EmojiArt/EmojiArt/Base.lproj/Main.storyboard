@@ -180,7 +180,7 @@
                         </barButtonItem>
                         <barButtonItem key="rightBarButtonItem" title="Inspect" id="omb-gY-eRj">
                             <connections>
-                                <segue destination="gOk-1b-CvW" kind="presentation" identifier="Show Document Info" id="lOJ-Ty-fYw"/>
+                                <segue destination="gOk-1b-CvW" kind="presentation" identifier="Show Document Info" modalPresentationStyle="formSheet" id="lOJ-Ty-fYw"/>
                             </connections>
                         </barButtonItem>
                     </navigationItem>
@@ -202,11 +202,11 @@
             <objects>
                 <viewController id="gOk-1b-CvW" customClass="DocumentInfoViewController" customModule="EmojiArt" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="hkg-64-f3n">
-                        <rect key="frame" x="0.0" y="0.0" width="1194" height="834"/>
+                        <rect key="frame" x="0.0" y="0.0" width="540" height="620"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="center" spacingType="standard" translatesAutoresizingMaskIntoConstraints="NO" id="sJo-9Z-v3o">
-                                <rect key="frame" x="477" y="311.5" width="240" height="215"/>
+                                <rect key="frame" x="150" y="202.5" width="240" height="215"/>
                                 <subviews>
                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="P0W-RE-kK6">
                                         <rect key="frame" x="0.0" y="0.0" width="240" height="128"/>

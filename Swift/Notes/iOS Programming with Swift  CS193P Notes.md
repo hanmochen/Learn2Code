@@ -3988,6 +3988,92 @@ The presentation & transition styles can be set in the storyboard by inspecting 
 
 
 
+Popovers pop an entire MVC over the rest of the screen
+
+- Popover’s arrow pointing to what caused it to appear
+- The grayed out area here is inactive. Touching in it will dismiss the popover.
+
+
+
+#### Preparing a Popover
+
+- All segues are managed via a `UIPresentationController` (but we’re not going to cover that) 
+- But we are going to talk about a popover’s `UIPopoverPresentationController`
+- It notes what caused the popover to appear (a bar button item or just a rectangle in a view) 
+- You can also control what direction the popover’s arrow is allowed to point 
+- Or you can control how a popover adapts to different sizes classes (e.g. iPad vs iPhone)
+
+
+
+```swift
+func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+  if let identifier = segue.identifier { 
+    switch identifier { 
+      case “Do Something in a Popover Segue”:
+      		if let vc = segue.destination as? MyController { 
+            if let ppc = vc.popoverPresentationController { 
+              ppc.permittedArrowDirections = UIPopoverArrowDirection.any ppc.delegate = self 
+            }
+            // more preparation here
+          } default: break
+    }
+  }
+}
+```
+
+
+
+- One thing that is different is that we are retrieving the popover’s presentation controller
+- We can use it to set some properties that will control how the popover pops up
+- And we can control the presentation by setting ourself (the Controller) as the delegate
+
+
+
+#### Adaptation to different size classes
+
+- One very interesting thing is how a popover presentation can “adapt” to different size classes. 
+- When a popover is presenting itself in a horizontally compact environment (e.g. iPhone),there might not be enough room to show a popover window comfortably, 
+- so by default it “adapts” and shows the MVC in full screen modal instead.
+
+But the popover presentation controller’s delegate can control this “adaptation” behavior. 
+
+Either by preventing it entirely …
+
+```swift
+func adaptivePresentationStyle( for controller: UIPresentationController, traitCollection: UITraitCollection ) -> UIModalPresentationStyle {
+  return UIModalPresentationStyle.none // don’t adapt
+  // the default in horizontally compact environments (iPhone) is .fullScreen
+}
+```
+
+You can control the view controller that is used to present in the adapted environment 
+
+Best example: wrapping a `UINavigationController` around the MVC that is presented
+
+```swift
+func presentationController(controller: UIPresentationController, viewControllerForAdaptivePresentationStyle: UIModalPresentationStyle) -> UIViewController?{
+  // return a UIViewController to use (e.g. wrap a Navigation Controller around your MVC) 
+}
+```
+
+
+
+#### Important Popover Issue: Size
+
+A popover will be made pretty large unless someone tells it otherwise.
+
+The MVC being presented knows best what it’s “preferred” size inside a popover would be.
+
+It expresses that via this property in itself (i.e. in the Controller of the MVC being presented) …
+
+```swift
+var preferredContentSize: CGSize
+```
+
+The MVC is not guaranteed to be that size, but the system will try its best. You can set or override the var to always return an appropriate size.
+
+
+
 ### Unwind Segue
 
 

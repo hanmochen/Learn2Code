@@ -4100,3 +4100,23 @@ What’s it good for?
 - You will be dismissed in the process (i.e. you’ll be “unpresented” and thrown away)
 
 ### Embed Segue
+
+Putting a VC’s self.view in another VC’s view hierarchy!
+
+- This can be a very powerful encapsulation technique.
+
+Xcode makes this easy
+
+- Drag out a Container View from the object palette into the scene you want to embed it in. 
+- Automatically sets up an “Embed Segue” from container VC to the contained VC.
+
+Embed Segue
+
+- Works just like other segues.
+
+- prepare(for segue:, sender:), et. al.
+
+View Loading Timing
+
+- Don’t forget, though, that just like other segued-to VCs, the embedded VC’s outlets are not set at the time prepare(for segue:, sender:) is called. 
+- So often we will just grab a pointer to the embedded VC in prepare.

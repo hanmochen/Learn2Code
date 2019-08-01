@@ -20,6 +20,8 @@ class EmojiArtViewController: UIViewController, UIDropInteractionDelegate,UIScro
                 if let ppc = destination.popoverPresentationController {
                     ppc.delegate = self
                 }
+            } else if segue.identifier == "Embed Document Info" {
+                embeddedDocInfo = segue.destination.contents as? DocumentInfoViewController
             }
         }
     }
@@ -31,6 +33,11 @@ class EmojiArtViewController: UIViewController, UIDropInteractionDelegate,UIScro
     @IBAction func close(bySegue:  UIStoryboardSegue){
         close()
     }
+    
+    
+    private var embeddedDocInfo: DocumentInfoViewController?
+    @IBOutlet weak var embeddedDocInfoWidth: NSLayoutConstraint!
+    @IBOutlet weak var embeddedDocInfoHeight: NSLayoutConstraint!
     
     //MARK: - Model
     var emojiArt: EmojiArt? {
@@ -100,6 +107,11 @@ class EmojiArtViewController: UIViewController, UIDropInteractionDelegate,UIScro
             queue: OperationQueue.main,
             using: { (notification) in
                 print("documentState changed to \(self.document!.documentState)")
+                if self.document!.documentState == .normal, let docInfoVC = self.embeddedDocInfo {
+                    docInfoVC.document = self.document
+                    self.embeddedDocInfoWidth.constant = docInfoVC.preferredContentSize.width
+                    self.embeddedDocInfoHeight.constant = docInfoVC.preferredContentSize.height
+                }
         })
         document?.open { success in
             if success {

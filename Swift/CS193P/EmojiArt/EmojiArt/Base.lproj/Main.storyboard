@@ -34,6 +34,16 @@
                         <rect key="frame" x="0.0" y="0.0" width="1194" height="834"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
+                            <containerView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="gEE-7k-DmH">
+                                <rect key="frame" x="954" y="636" width="240" height="128"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="240" id="K7C-LK-Mek"/>
+                                    <constraint firstAttribute="height" constant="128" id="ebO-fZ-Akj"/>
+                                </constraints>
+                                <connections>
+                                    <segue destination="bP5-Va-XTR" kind="embed" identifier="Embed Document Info" id="SbT-Dg-aT8"/>
+                                </connections>
+                            </containerView>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="IIM-kG-HXx">
                                 <rect key="frame" x="0.0" y="162" width="1194" height="602"/>
                                 <subviews>
@@ -163,8 +173,10 @@
                         <constraints>
                             <constraint firstItem="pb8-cc-bod" firstAttribute="trailing" secondItem="xP4-Mu-Dm1" secondAttribute="trailing" id="Jte-zZ-8eK"/>
                             <constraint firstItem="IIM-kG-HXx" firstAttribute="top" secondItem="xP4-Mu-Dm1" secondAttribute="bottom" constant="8" symbolic="YES" id="Tw6-Hy-5jH"/>
+                            <constraint firstItem="pb8-cc-bod" firstAttribute="trailing" secondItem="gEE-7k-DmH" secondAttribute="trailing" id="WEo-1c-ygk"/>
                             <constraint firstItem="xP4-Mu-Dm1" firstAttribute="leading" secondItem="pb8-cc-bod" secondAttribute="leading" id="auq-zZ-Oyz"/>
                             <constraint firstItem="IIM-kG-HXx" firstAttribute="bottom" secondItem="pb8-cc-bod" secondAttribute="bottom" id="fI7-5P-6N1"/>
+                            <constraint firstItem="pb8-cc-bod" firstAttribute="bottom" secondItem="gEE-7k-DmH" secondAttribute="bottom" id="g8X-9m-mgQ"/>
                             <constraint firstItem="xP4-Mu-Dm1" firstAttribute="top" secondItem="pb8-cc-bod" secondAttribute="top" id="gbE-FJ-Rlp"/>
                             <constraint firstItem="IIM-kG-HXx" firstAttribute="leading" secondItem="pb8-cc-bod" secondAttribute="leading" id="ldd-g7-Dqy"/>
                             <constraint firstItem="IIM-kG-HXx" firstAttribute="trailing" secondItem="pb8-cc-bod" secondAttribute="trailing" id="wGs-D7-bVg"/>
@@ -196,6 +208,8 @@
                     <simulatedToolbarMetrics key="simulatedBottomBarMetrics"/>
                     <connections>
                         <outlet property="dropZone" destination="IIM-kG-HXx" id="aTw-1f-d88"/>
+                        <outlet property="embeddedDocInfoHeight" destination="ebO-fZ-Akj" id="b6W-EV-Hts"/>
+                        <outlet property="embeddedDocInfoWidth" destination="K7C-LK-Mek" id="yRO-9D-n4K"/>
                         <outlet property="emojiCollectionView" destination="xP4-Mu-Dm1" id="BtI-UJ-rju"/>
                         <outlet property="scrollView" destination="zdy-SW-Jjx" id="RUd-Xf-fZK"/>
                         <outlet property="scrollViewHeight" destination="fXE-ah-zG4" id="tdg-Op-NiB"/>
@@ -320,6 +334,70 @@
                 <placeholder placeholderIdentifier="IBFirstResponder" id="xVW-8B-QTd" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="-433.27338129496405" y="-145.32374100719426"/>
+        </scene>
+        <!--Document Info View Controller-->
+        <scene sceneID="UxP-oE-hZM">
+            <objects>
+                <viewController id="bP5-Va-XTR" customClass="DocumentInfoViewController" customModule="EmojiArt" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" userInteractionEnabled="NO" contentMode="scaleToFill" id="AdD-pN-WVA">
+                        <rect key="frame" x="0.0" y="0.0" width="240" height="128"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <stackView opaque="NO" contentMode="scaleToFill" spacingType="standard" translatesAutoresizingMaskIntoConstraints="NO" id="I9E-MX-55H">
+                                <rect key="frame" x="13.5" y="43.5" width="213.5" height="41"/>
+                                <subviews>
+                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="bottom" translatesAutoresizingMaskIntoConstraints="NO" id="1Kw-hi-pgB">
+                                        <rect key="frame" x="0.0" y="0.0" width="66" height="41"/>
+                                        <subviews>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Size:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="3Cn-Xw-I2U">
+                                                <rect key="frame" x="29" y="0.0" width="37" height="20.5"/>
+                                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                <nil key="textColor"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Created:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="yeh-QF-Da5">
+                                                <rect key="frame" x="0.0" y="20.5" width="66" height="20.5"/>
+                                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                <nil key="textColor"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                        </subviews>
+                                    </stackView>
+                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="top" translatesAutoresizingMaskIntoConstraints="NO" id="mKn-nB-i2z">
+                                        <rect key="frame" x="74" y="0.0" width="139.5" height="41"/>
+                                        <subviews>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="99 bytes" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="R5H-pT-hEX">
+                                                <rect key="frame" x="0.0" y="0.0" width="67.5" height="20.5"/>
+                                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                <nil key="textColor"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="08/01/20,10:00am" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="boZ-fQ-oae">
+                                                <rect key="frame" x="0.0" y="20.5" width="139.5" height="20.5"/>
+                                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                <nil key="textColor"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                        </subviews>
+                                    </stackView>
+                                </subviews>
+                            </stackView>
+                        </subviews>
+                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <constraints>
+                            <constraint firstItem="I9E-MX-55H" firstAttribute="centerY" secondItem="AdD-pN-WVA" secondAttribute="centerY" id="Cut-XN-jJP"/>
+                            <constraint firstItem="I9E-MX-55H" firstAttribute="centerX" secondItem="AdD-pN-WVA" secondAttribute="centerX" id="TP9-pX-psX"/>
+                        </constraints>
+                    </view>
+                    <connections>
+                        <outlet property="createdLabel" destination="boZ-fQ-oae" id="Fwo-Yy-v1N"/>
+                        <outlet property="sizeLabel" destination="R5H-pT-hEX" id="zP9-MF-1k9"/>
+                        <outlet property="topLevelView" destination="mKn-nB-i2z" id="egB-1r-txq"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="nXC-0H-PIV" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="281" y="444"/>
         </scene>
     </scenes>
     <inferredMetricsTieBreakers>

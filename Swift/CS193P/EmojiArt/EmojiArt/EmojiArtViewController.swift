@@ -28,6 +28,10 @@ class EmojiArtViewController: UIViewController, UIDropInteractionDelegate,UIScro
         return .none
     }
     
+    @IBAction func close(bySegue:  UIStoryboardSegue){
+        close()
+    }
+    
     //MARK: - Model
     var emojiArt: EmojiArt? {
         get {
@@ -66,7 +70,7 @@ class EmojiArtViewController: UIViewController, UIDropInteractionDelegate,UIScro
         }
     }
     
-    @IBAction func close(_ sender: UIBarButtonItem) {
+    @IBAction func close(_ sender: UIBarButtonItem? = nil) {
         documentChanged()
         if let observer = emojiArtViewObserver {
             NotificationCenter.default.removeObserver(observer)

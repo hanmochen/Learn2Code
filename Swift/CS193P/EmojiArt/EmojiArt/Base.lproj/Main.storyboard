@@ -215,7 +215,7 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="center" spacingType="standard" translatesAutoresizingMaskIntoConstraints="NO" id="sJo-9Z-v3o">
-                                <rect key="frame" x="67.5" y="226" width="240" height="215"/>
+                                <rect key="frame" x="67.5" y="207" width="240" height="253"/>
                                 <subviews>
                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="P0W-RE-kK6">
                                         <rect key="frame" x="0.0" y="0.0" width="240" height="128"/>
@@ -263,8 +263,17 @@
                                             </stackView>
                                         </subviews>
                                     </stackView>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="BaS-oM-UwV">
+                                        <rect key="frame" x="63" y="185" width="114" height="30"/>
+                                        <state key="normal" title="Close Document">
+                                            <color key="titleColor" red="1" green="0.14913141730000001" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                        </state>
+                                        <connections>
+                                            <segue destination="C9V-av-fIc" kind="unwind" unwindAction="closeBySegue:" id="bdv-7J-g2L"/>
+                                        </connections>
+                                    </button>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Ikx-yk-xUC">
-                                        <rect key="frame" x="50.5" y="185" width="139" height="30"/>
+                                        <rect key="frame" x="50.5" y="223" width="139" height="30"/>
                                         <state key="normal" title="Return to Document"/>
                                         <connections>
                                             <action selector="done" destination="gOk-1b-CvW" eventType="touchUpInside" id="1Zi-G9-mDC"/>
@@ -290,6 +299,7 @@
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="mAr-ZD-EUq" userLabel="First Responder" sceneMemberID="firstResponder"/>
+                <exit id="C9V-av-fIc" userLabel="Exit" sceneMemberID="exit"/>
             </objects>
             <point key="canvasLocation" x="921.608040201005" y="-146.0431654676259"/>
         </scene>

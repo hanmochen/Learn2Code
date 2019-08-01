@@ -4076,6 +4076,27 @@ The MVC is not guaranteed to be that size, but the system will try its best. You
 
 ### Unwind Segue
 
+The only segue that does NOT create a new MVC
 
+- It can only segue to other MVCs that (directly or indirectly) presented the current MVC
+
+What’s it good for?
+
+- Jumping up the stack of cards in a navigation controller (other cards are considered presenters) 
+- Dismissing a Modally segued-to MVC while reporting information back to the presenter
+
+
+
+#### How does it work?
+
+- Instead of ctrl-dragging to another MVC, you ctrl-drag to the “Exit” button in the same MVC
+- Then you can choose a special @IBAction method you’ve created in another MVC
+- This means “segue by exiting me and ﬁnding a presenter who implements that method” 
+  - This method must be marked @IBAction.
+  - And it must have a `UIStoryboardSegue` as its only argument.
+- If no presenter (directly or indirectly) implements that method, the segue will not happen
+- If the @IBAction can be found, you (i.e. the presented MVC) will get to prepare as normal
+- Then the special @IBAction will be called in the other MVC and that MVC will be shown on screen
+- You will be dismissed in the process (i.e. you’ll be “unpresented” and thrown away)
 
 ### Embed Segue

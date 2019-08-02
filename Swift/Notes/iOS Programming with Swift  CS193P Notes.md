@@ -4495,3 +4495,257 @@ struct CMAuthorizationStatus {
 
 
  Lack of authorization may also show up as an error when you request data.
+
+
+
+## Camera
+
+
+
+### `UIImagePickerController`
+
+
+
+#### About it
+
+Modal view controller to get media from camera or photo library
+
+**Usage**
+
+
+1. Create it & set its delegate (it can’t do anything without its delegate)
+
+2. Conﬁgure it (source, kind of media, user edibility, etc.)
+
+3. Present it
+
+4. Respond to delegate methods when user is done/cancels picking the media
+
+
+
+**What the user can do depends on the platform**
+
+Almost all devices have cameras, but some can record video, some can not
+ You can only offer camera or photo library on iPad (not both together at the same time) 
+
+As with all device-dependent API, we want to start by check what’s available …
+
+```swift
+static func isSourceTypeAvailable(sourceType: UIImagePickerControllerSourceType) -> Bool
+```
+
+Source type is
+
+.`photoLibrary` or .`camera` or .`savedPhotosAlbum` (camera roll)
+
+
+
+**But don’t forget that not every source type can give video**
+
+
+So, you then want to check ...
+
+```swift
+static func availableMediaTypes(for: UIImagePickerControllerSourceType) -> [String]?
+```
+
+Depending on device, will return one or more of these ...
+
+```swift
+kUTTypeImage // pretty much all sources provide this, hardly worth checking for even
+kUTTypeLivePhoto // must also say kUTTypeImage for this one to work
+kUTTypeMovie // audio and video together, only some sources provide this
+```
+
+These speciﬁc are declared about in the  `MobileCoreServices` framework.
+
+
+
+**You can get even more These speciﬁc are declared about in the cameras**
+
+```swift
+static func isCameraDeviceAvailable(UIImagePickerControllerCameraDevice) -> Bool 
+```
+
+returns `.rear` or `.front`
+
+There are other camera-speciﬁc interrogations too, for example …
+
+```swift
+static func isFlashAvailableForCameraDevice(UIImagePickerControllerCameraDevice) -> Bool
+```
+
+### Use it
+
+**Set the source and media type you want in the picker**
+
+
+Example setup of a picker for capturing video (`kUTTypeMovie`) …
+
+
+(From here out, `UIImagePickerController` will be abbreviated UIIPC for space reasons.)
+
+```swift
+let picker = UIImagePickerController() 
+let mediaTypeMovie = kUTTypeMovie as String 
+picker.delegate = self // self must implement UINavigationControllerDelegate too 
+if UIIPC.isSourceTypeAvailable(.camera) {
+  picker.sourceType = .camera
+  if let availableTypes = UIIPC.availableMediaTypesForSourceType(.camera) {
+    if availableTypes.contains(mediaTypeMovie) { 
+      picker.mediaTypes = [mediaTypeMovie]
+      // proceed to put the picker up
+    }
+  }
+}
+```
+
+
+
+**Editability**
+
+`var allowsEditing: Bool`
+
+- If true, then the user will have opportunity to edit the image/video inside the picker. 
+- When your delegate is notiﬁed that the user is done, you’ll get both raw and edited versions.
+
+
+
+**Limiting Video Capture**
+
+`var videoQuality: UIImagePickerControllerQualityType` 
+
+- .typeMedium // default 
+- .typeHigh 
+- .type640x480 
+- .typeLow 
+- .typeIFrame1280x720 // native on some devices 
+- .typeIFrame960x540 // native on some devices
+
+`var videoMaximumDuration: TimeInterval // defaults to 10 minutes`
+
+
+
+**Present the picker**
+
+```swift
+present(picker, animated: true, completion: nil)
+```
+
+On iPad, if you are not offering Camera (just photo library), you must present with popover.
+ If you are offering the Camera on iPad, then full-screen is preferred.
+
+**Remember: on iPad, it’s Camera OR Photo Library (not both at the same time).**
+
+
+
+**Delegate will be notiﬁed when user is done**
+
+```swift
+func imagePickerController( UIIPC, didFinishPickingMediaWithInfo info: [String:Any]) { 
+  // extract image/movie data/metadata here from info, more on the next slide
+  picker.presentingViewController?.dismiss(animated: true) { }
+}
+```
+
+**Also dismiss it when cancel happens**
+
+```swift
+func imagePickerControllerDidCancel(UIIPC) { 
+  picker.presentingViewController?.dismiss(animated: true) { } 
+}
+```
+
+
+
+**What is in that info dictionary?**
+
+- `UIImagePickerControllerMediaType` // kUTTypeImage, kUTTypeMovie
+- `UIImagePickerControllerOriginalImage`  // UIImage
+- `UIImagePickerControllerEditedImage`  // UIImage
+- `UIImagePickerControllerImageURL` // URL (in a temp location, so move it to keep it)
+- `UIImagePickerControllerCropRect` // CGRect (in an NSValue)
+- `UIImagePickerControllerMediaMetadata` // Dictionary of info about the image
+- `UIImagePickerControllerLivePhoto` // a PHLivePhoto
+- `UIImagePickerControllerPHAsset`  // a PHAsset (see PHPhotoLibrary)
+- `UIImagePickerControllerMediaURL`  // URL of the video if kUTTypeMovie
+
+
+
+**Saving taken images or video into the device’s photo library**
+
+
+You can save to the user’s Camera Roll … 
+
+```swift
+func UIImageWriteToSavedPhotosAlbum( 
+  _ image: UIImage, 
+  _ target: Any?, // the object to send selector to when ﬁnished writing
+  _ selector: Selector? // selector to send to target when ﬁnished writing
+  _ context: UnsafeMutableRawPointer?// passed to the selector
+)
+```
+
+- It’s a bummer that this isn’t closure-based, but it is what it is. 
+
+- This is a very simple and convenient way to do this.
+- But this only makes sense if the user only occasionally would want to save an image.
+- Otherwise, you’ll want to integrate with the Photos application: checkout `PHPhotoLibrary`.
+- Of course, you could also save the image into your own sandbox.
+- You’d do that if the captured images only make sense inside your own app.
+- In general, much more sophisticated media capture is available
+- This `UIImagePickerController` API is pretty simple, but more powerful API exists.
+   Check out both `PHPhotoLibrary` and `AVCaptureDevice`.
+
+
+
+**Overlay View**
+
+`var cameraOverlayView: UIView` 
+
+Be sure to set this view’s frame properly.
+
+Camera is always full screen, so use `UIScreen.main`’s bounds property.
+
+If you use the built-in controls at the bottom, you might want your view to be smaller.
+
+
+
+**Hiding the normal camera controls (at the bottom)**
+
+`var showsCameraControls: Bool`
+
+- Will leave a blank area at the bottom of the screen (camera’s aspect 4:3, not same as screen’s). 
+- With no controls, you’ll need an overlay view with a “take picture” (at least) button.
+
+- That button should send `takePicture()` or (`startVideoCapture()`) to the picker.
+
+- Don’t forget to dismiss when you are done taking pictures.
+
+**You can zoom or translate the image while capturing**
+
+`var cameraViewTransform: CGAffineTransform`
+
+For example, you might want to scale the image up to full screen (some of it will get clipped).
+
+
+
+### Core Image and Vision
+
+
+
+- Core Image is a powerful and efﬁcient framework for applying ﬁlters to your images.
+
+- Has a couple of hundred ﬁlters to choose from (blur, depth, comparison, colors, smoothing, etc.).
+
+- Vision framework provides powerful feature detection in images (e.g. faces, barcodes, etc.).
+-  Core Image also has some feature detection API.
+- Check out Core Image and Vision in the documentation.
+
+
+ 
+
+
+
+
+

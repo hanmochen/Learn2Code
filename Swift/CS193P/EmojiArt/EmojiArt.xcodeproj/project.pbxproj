@@ -72,13 +72,9 @@
 		D2E50CFC22EE8B0500945BCC /* EmojiArt */ = {
 			isa = PBXGroup;
 			children = (
-				D2E50CFF22EE8B0500945BCC /* DocumentBrowserViewController.swift */,
-				D2E50D0322EE8B0500945BCC /* EmojiArtDocument.swift */,
-				D216C32822F0407D008358DC /* EmojiArtView.swift */,
 				D216C32A22F0407F008358DC /* EmojiArt.swift */,
 				D216C32622F0407B008358DC /* EmojiArtViewController.swift */,
 				D2E50D0522EE8B0500945BCC /* Main.storyboard */,
-				D2E4D54D22F290C700CBEB36 /* DocumentInfoViewController.swift */,
 				D2E50D0D22EE8B0800945BCC /* Info.plist */,
 				D2E50D1322EE8B4700945BCC /* Supporting Files */,
 			);
@@ -88,6 +84,10 @@
 		D2E50D1322EE8B4700945BCC /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				D2E50D0322EE8B0500945BCC /* EmojiArtDocument.swift */,
+				D2E50CFF22EE8B0500945BCC /* DocumentBrowserViewController.swift */,
+				D216C32822F0407D008358DC /* EmojiArtView.swift */,
+				D2E4D54D22F290C700CBEB36 /* DocumentInfoViewController.swift */,
 				D216C33022F0414E008358DC /* EmojiArtView+Gestures.swift */,
 				D216C32E22F0414E008358DC /* EmojiCollectionViewCell.swift */,
 				D216C33122F0414E008358DC /* TextFieldCollectionViewCell.swift */,

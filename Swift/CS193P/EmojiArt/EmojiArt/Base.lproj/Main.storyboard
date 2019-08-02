@@ -47,10 +47,10 @@
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="IIM-kG-HXx">
                                 <rect key="frame" x="0.0" y="162" width="1194" height="602"/>
                                 <subviews>
-                                    <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" ambiguous="YES" translatesAutoresizingMaskIntoConstraints="NO" id="zdy-SW-Jjx">
-                                        <rect key="frame" x="190" y="13" width="815" height="626"/>
+                                    <scrollView verifyAmbiguity="off" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" ambiguous="YES" translatesAutoresizingMaskIntoConstraints="NO" id="zdy-SW-Jjx">
+                                        <rect key="frame" x="299" y="80" width="617" height="443"/>
                                         <constraints>
-                                            <constraint firstAttribute="width" priority="250" constant="600" id="Fz8-sM-RvM"/>
+                                            <constraint firstAttribute="width" constant="600" id="Fz8-sM-RvM"/>
                                             <constraint firstAttribute="height" priority="250" constant="500" id="fXE-ah-zG4"/>
                                         </constraints>
                                     </scrollView>
@@ -203,10 +203,16 @@
                                     <segue destination="gOk-1b-CvW" kind="presentation" identifier="Show Document Info" modalPresentationStyle="formSheet" id="lOJ-Ty-fYw"/>
                                 </connections>
                             </barButtonItem>
+                            <barButtonItem systemItem="camera" id="3Up-xU-Fyi">
+                                <connections>
+                                    <action selector="takeBackgroundButton:" destination="FQr-HZ-zfN" id="05r-dj-cCz"/>
+                                </connections>
+                            </barButtonItem>
                         </rightBarButtonItems>
                     </navigationItem>
                     <simulatedToolbarMetrics key="simulatedBottomBarMetrics"/>
                     <connections>
+                        <outlet property="cameraButton" destination="3Up-xU-Fyi" id="gNO-dF-6zF"/>
                         <outlet property="dropZone" destination="IIM-kG-HXx" id="aTw-1f-d88"/>
                         <outlet property="embeddedDocInfoHeight" destination="ebO-fZ-Akj" id="b6W-EV-Hts"/>
                         <outlet property="embeddedDocInfoWidth" destination="K7C-LK-Mek" id="yRO-9D-n4K"/>
@@ -388,6 +394,7 @@
                             <constraint firstItem="I9E-MX-55H" firstAttribute="centerY" secondItem="AdD-pN-WVA" secondAttribute="centerY" id="Cut-XN-jJP"/>
                             <constraint firstItem="I9E-MX-55H" firstAttribute="centerX" secondItem="AdD-pN-WVA" secondAttribute="centerX" id="TP9-pX-psX"/>
                         </constraints>
+                        <viewLayoutGuide key="safeArea" id="UsK-PR-vww"/>
                     </view>
                     <connections>
                         <outlet property="createdLabel" destination="boZ-fQ-oae" id="Fwo-Yy-v1N"/>

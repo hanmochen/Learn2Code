@@ -4120,3 +4120,378 @@ View Loading Timing
 
 - Don’t forget, though, that just like other segued-to VCs, the embedded VC’s outlets are not set at the time prepare(for segue:, sender:) is called. 
 - So often we will just grab a pointer to the embedded VC in prepare.
+
+
+
+
+
+## Core Motion
+
+
+
+### About it
+
+- API to access motion sensing hardware on your device
+- Primary inputs: Accelerometer, Gyro, Magnetometer
+  - Not all devices have all inputs (e.g. only later model devices have a gyro)
+- Class used to get this input is `CMMotionManager`
+  - Use only one instance per application (else performance hit)
+  - It is a “global resource,” so getting one via a class method somewhere is okay
+
+
+
+### Usage
+
+1. Check to see what hardware is available
+2. Start the sampling going and poll the motion manager for the latest sample it has ... or ...
+3. Check to see what hardware is available
+4. Set the rate at which you want data to be reported from the hardware
+5. Register a closure (and a queue to run it on) to call each time a sample is taken
+
+
+
+**Checking availability of hardware sensors**
+
+- `var {accelerometer,gyro,magnetometer,deviceMotion}Available: Bool`
+- The “device motion” is a combination of all available (accelerometer, magnetometer, gyro).
+
+
+
+**Starting the hardware sensors collecting data**
+
+- You only need to do this if you are going to poll for data.
+
+- Generally used when some architecture in your app is already periodic (e.g. animation frames).
+
+  ```swift
+  func start{Accelerometer,Gyro,Magnetometer,DeviceMotion}Updates()
+  ```
+
+    
+
+**Is the hardware currently collecting data?**
+
+```swift
+var {accelerometer,gyro,magnetometer,deviceMotion}Active: Bool
+```
+
+
+
+**Stop the hardware collecting data**
+
+
+It is a performance hit to be collecting data, so stop during times you don’t need the data.
+
+```swift
+func stop{Accelerometer,Gyro,Magnetometer,DeviceMotion}Updates()
+```
+
+
+
+### Getting Data
+
+Checking the data (from existing periodic mechanism)
+
+#### from accelerometer
+
+```swift
+var accelerometerData: CMAccelerometerData?
+//CMAccelerometerData object provides 
+var acceleration: CMAcceleration 
+struct CMAcceleration {
+  var x: Double // in g (9.8 m/s/s)
+  var y: Double // in g
+  var z: Double // in g 
+}
+
+//This raw data includes acceleration due to gravity
+// So, if the device were laid ﬂat, z would be 1.0 and x and y would be 0.0
+```
+
+
+
+#### from Gyro
+
+```swift
+var gyroData: CMGyroData?
+
+//CMGyroData object provides 
+var rotationRate: CMRotationRate 
+struct CMRotationRate {
+  var x: Double // in radians/s
+  var y: Double // in radians/s
+  var z: Double // in radians/s 
+}
+
+//Sign of the rotation data follows right hand rule
+//The data above will be biased
+```
+
+
+
+#### from magnetometer
+
+```swift
+var magnetometerData: CMMagnetometerData?
+//CMMagnetometerData object provides 
+var magneticField: CMMagneticField 
+struct CMMagneticField {
+  var x: Double // in microteslas
+  var y: Double // in microteslas
+  var z: Double // in microteslas 
+}
+
+//The data above will be biased
+```
+
+
+
+#### CMDeviceMotion
+
+**CMDeviceMotion is a “combined” motion data source**
+
+It uses information from all the hardware to improve the data from each.
+
+```swift
+ var deviceMotion: CMDeviceMotion? 
+```
+
+**Acceleration Data in CMDeviceMotion**
+
+```swift
+var gravity: CMAcceleration 
+var userAcceleration: CMAcceleration// gravity factored out using gyro
+```
+
+**Other information in CMDeviceMotion**
+
+```swift
+var rotationRate: CMRotationRate // bias removed from raw data using accelerometer 
+var attitude: CMAttitude // device’s attitude (orientation) in 3D space
+class CMAttitude: NSObject{ // roll, pitch and yaw are in radians 
+  var roll: Double // around longitudinal axis passing through top/bottom 
+  var pitch: Double // around lateral axis passing through sides 
+  var yaw: Double // around axis with origin at CofG and ⊥ to screen directed down
+} 
+var heading: Double // in degrees, where 0 is north (true or magnetic depending on frame)
+```
+
+
+
+**Reference Frame**
+
+Magnetometer use in CMDeviceMotion can be controlled by setting its reference frame.
+ Specify this when calling `startDeviceMotionUpdates`.
+
+```swift
+xArbitraryZVertical // the default, does not use magnetometer
+ xArbitraryCorrectedZVertical // uses magnetometer (if available) to correct yaw over time
+xMagnetic/TrueNorthZVertical // uses magnetometer for device position/heading in world
+```
+
+
+ These last two may require the user to calibrate the magnetometer.
+
+
+And for TrueNorth, location information (e.g. GPS/Wiﬁ/Cellular) will also be required.
+ North frames are necessary for apps that use things like Augmented Reality.
+
+
+To get `heading`, for example, you must use a `MagneticNorth` or `TrueNorth` reference frame.
+
+
+Always check to make sure the reference frame you want is available on the device …
+
+```swift
+static func availableAttitudeReferenceFrames() -> CMAttitudeReferenceFrame
+```
+
+
+
+### Using Core Motion
+
+#### Registering a block
+
+**Registering a block to receive Accelerometer data**
+
+```swift
+func startAccelerometerUpdatesToQueue(
+  queue: OperationQueue, 
+  withHandler: CMAccelerometerHandler) 
+typealias CMAccelerationHandler = (CMAccelerometerData?, Error?) -> Void 
+//queue can be an OperationQueue() you create or Operation.main (or current)
+```
+
+**Registering a block to receive Gyro data**
+
+```swift
+func startGyroUpdatesToQueue(
+  queue: OperationQueue, 
+  withHandler: CMGyroHandler) 
+typealias CMGyroHandler = (CMGyroData?, Error?) -> Void
+```
+
+**Registering a block to receive Magnetometer data**
+
+```swift
+func startMagnetometerUpdatesToQueue(
+  queue: OperationQueue, 
+  withHandler: CMMagnetometerHandler) 
+typealias CMMagnetometerHandler = (CMMagnetometerData?, Error?) -> Void
+```
+
+**Registering a block to receive DeviceMotion data**
+
+```swift
+func startDeviceMotionUpdates(
+  using: CMAttitudeReferenceFrame, 
+  queue: OperationQueue, 
+  withHandler: (CMDeviceMotion?, Error?) -> Void) 
+```
+
+queue can be an `OperationQueue()` you create or `Operation.mainQueue` (or currentQueue)
+ Errors 
+
+- CMErrorDeviceRequiresMovement
+
+- CMErrorTrueNorthNotAvailable
+
+- CMErrorMotionActivityNotAvailable
+
+- CMErrorMotionActivityNotAuthorized
+
+**Setting the rate at which your block gets executed**
+
+```swift
+var accelerometerUpdateInterval: TimeInterval 
+var gyroUpdateInterval: TimeInterval 
+var magnetometerUpdateInterval: TimeInterval 
+var deviceMotionUpdateInterval: TimeInterval
+```
+
+It is okay to add multiple handler blocks
+
+
+
+#### Accelerometer Over Time
+
+**Historical Accelerometer Data**
+
+- Sometimes you don’t need to look at the accelerometer in real time.
+
+- You just want to know what happened over a period of time in the past.
+
+- For example, if you want an idea of the user’s physical movement pattern.
+
+
+The class `CMSensorRecorder` can record (at 50hz) and then play back accelerometer data.
+
+Not all devices are capable of this (iPhone 7 and later, Apple Watch).
+
+```swift
+isAccelerometerRecordingAvailable() -> Bool // whether this device can record
+```
+
+
+Start recording data …
+
+```swift
+func recordAccelerometer(forDuration: TimeInterval) // keep this short for performance
+```
+
+
+Retrieving the recorded data …
+
+```swift
+func accelerometerData(from: Date, to: Date) -> CMSensorDataList // 3 day max
+```
+
+You enumerate over the `CMAccelerometerData` objects in a `CMSensorDataList` with for in …
+
+```swift
+for dataPoint: CMRecordedAccelerometerData in sensorDataList { . . . }
+```
+
+
+
+#### Activity Monitoring
+
+**Rough estimate of what the user is doing**
+
+
+For example, stationary, walking, running, automotive, or cycling.
+
+
+You track this with a `CMMotionActivityManager` (not a `CMMotionManager`!).
+
+```swift
+func startActivityUpdates(to: OperationQueue, withHandler: (CMMotionActivity?) -> Void) 
+```
+
+
+ CMMotionActivity is one of the above activities.
+
+
+You can also query historical activity with …
+
+```swift
+func queryActivityStarting(from: Date, to: Date, to: OperationQueue, withHandler: …)
+```
+
+
+
+### Pedometer
+
+#### Pedometer
+
+Getting the user’s “step” information only makes sense over time.
+ Create a `CMPedometer` and then send it the message …
+
+```swift
+func startUpdates(from: Date, withHandler: (CMPedometerData?, Error?) -> Void)
+```
+
+The from Date is allowed to be in the past (but only last 7 days are recorded).
+
+Your handler will be called periodically with the struct `CMPedometerData` which has …
+ `startDate` and `endDate` of the data `numberOfSteps`, `distance`, `averageActivePace`, and `currentPace` during the time also`floorsAscended` and `floorsDescended`
+
+#### Altimeter
+
+
+Get relative altitude changes.
+
+```swift
+func startRelativeAltitudeUpdates(to: OperationQueue, withHandler: (CMAltitudeData?, Error?)) 
+```
+
+`CMAltitudeData` has both change in altitude in meters and raw atmospheric pressure data.
+
+
+
+### Checking the authorization status of hardware sensors
+
+
+Some information is considered “private” to the user (e.g. ﬁtness data).
+
+
+Speciﬁcally `CMPedometer`, `CMSensorRecorder`, `CMMotionActivityManager` and `CMAltimeter`.
+
+
+iOS will automatically ask the user (once) for permission to access this information.
+
+You can ﬁnd out what the status is at any time with this static func on each of these.
+
+```swift
+static func authorizationStatus() -> CMAuthorizationStatus 
+
+struct CMAuthorizationStatus { 
+  case notDetermined // user has not yet been asked 
+  case restricted // ﬁtness data access disabled in Settings
+  case denied // user has explicitly denied your app access
+  case authorized // ready to go!
+
+```
+
+
+ Lack of authorization may also show up as an error when you request data.

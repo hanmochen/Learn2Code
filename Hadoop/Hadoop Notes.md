@@ -226,3 +226,65 @@ WARN util.NativeCodeLoader: Unable to load native-hadoop library for your platfo
 
 
 
+## 在 Mac 上编译 hadoop 源码
+
+
+
+### 下载 hadoop 源码
+
+- 版本 `3.1.2`
+- 在 Apache 官网下载 `tar.gz` 文件后解压
+- 解压后的文件中有一个 `building.txt`
+
+
+
+### 创建容器
+
+- 环境：
+
+  - Docker
+  - Virtual Box
+
+- 根据 `building.txt`
+
+- ```bash
+  $ docker-machine create --driver virtualbox \
+                              --virtualbox-memory "4096" hadoopdev
+  $ eval $(docker-machine env hadoopdev)
+  $ ./start-build-env.sh
+  ```
+
+- 留足够空间 `20GB` 左右
+- 等很久最后 `build` 成功会出现 `hadoop` 的 ASCII 图像
+
+
+
+### 在容器里构建
+
+```shell
+mvn package -Pdist,native -DskipTests -Dtar
+```
+
+- 貌似要求 jdk 为 1.7.0 版本 
+
+
+
+## Spark 的安装
+
+
+
+### Scala 和 Spark
+
+- 全部可以用 `homebrew` 解决
+- `brew install scala` 和 `brew install apache-spark`
+- 安装完成后可以 `scala -version` 检查是否安装成功
+- `brew install spark` 是另一个重名的 `spark`
+
+
+
+### 安装 `pyspark`
+
+- `pip install pyspark`
+
+
+
